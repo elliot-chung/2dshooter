@@ -12,7 +12,6 @@ const INVINCIBILITY_TIME := 0.2
 @export var PlayerPath: NodePath = NodePath()
 @export var CameraPath: NodePath = NodePath()
 @export var MeshInstancePath: NodePath = NodePath()
-@export var CursorMeshInstancePath: NodePath = NodePath()
 @export var BulletLocationPath: NodePath = NodePath()
 
 # Configurable Variables
@@ -49,7 +48,6 @@ const INVINCIBILITY_TIME := 0.2
 var Player: CharacterBody3D
 var PlayerCamera: Camera3D
 var PlayerMeshInstance: MeshInstance3D
-var CursorMeshInstance: MeshInstance3D
 var BulletLocation: Node3D
 
 # Public Variables
@@ -197,15 +195,12 @@ func _calculate_cursor_location():
 	if result.get("position") != null:
 		_collision_point = result["position"]
 	# Move Cursor _to Collision Point
-	
-	CursorMeshInstance.set_global_position(_collision_point)
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED)
 	Player = get_node(PlayerPath)
 	PlayerCamera = get_node(CameraPath)
 	PlayerMeshInstance = get_node(MeshInstancePath)
-	CursorMeshInstance = get_node(CursorMeshInstancePath)
 	BulletLocation = get_node(BulletLocationPath)
 	
 	$HealthBar.value = 100.0 * health / max_health

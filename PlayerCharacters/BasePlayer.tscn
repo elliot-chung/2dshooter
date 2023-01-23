@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://b22gbibvqjh8x"]
+[gd_scene load_steps=11 format=3 uid="uid://b22gbibvqjh8x"]
 
 [ext_resource type="Script" path="res://PlayerCharacters/controller.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://b5u1okuuwqx2a" path="res://PlayerCharacters/Over.png" id="2"]
@@ -21,14 +21,6 @@ albedo_color = Color(0.372549, 0.196078, 0.788235, 1)
 left_to_right = 1.0
 size = Vector3(0.2, 0.5, 0.4)
 
-[sub_resource type="CylinderMesh" id="9"]
-top_radius = 0.3
-bottom_radius = 0.3
-height = 0.1
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tsuqu"]
-albedo_color = Color(1, 1, 0, 1)
-
 [node name="Player" type="CharacterBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 collision_layer = 4
@@ -37,7 +29,6 @@ script = ExtResource("1")
 PlayerPath = NodePath(".")
 CameraPath = NodePath("Camera3D")
 MeshInstancePath = NodePath("PlayerModel")
-CursorMeshInstancePath = NodePath("TargetCursor")
 BulletLocationPath = NodePath("PlayerModel/BulletLocation")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
@@ -58,11 +49,6 @@ surface_material_override/0 = SubResource("StandardMaterial3D_2bfjy")
 transform = Transform3D(-4.37114e-08, 0, -1, 1, -4.37114e-08, -4.37114e-08, -4.37114e-08, -1, 1.91069e-15, 0, 0, -0.7)
 mesh = SubResource("7")
 skeleton = NodePath("../..")
-
-[node name="TargetCursor" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.95, 2)
-mesh = SubResource("9")
-surface_material_override/0 = SubResource("StandardMaterial3D_tsuqu")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 34.6, 20)
