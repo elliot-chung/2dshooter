@@ -15,7 +15,7 @@ func _ready():
 	
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+func _process(_delta):
 	var new_pos := Player.get_global_position() + offset
 	var clamp_x := clamp(new_pos.x, -LIMIT, LIMIT)
 	var clamp_z := clamp(new_pos.z, -LIMIT, LIMIT)

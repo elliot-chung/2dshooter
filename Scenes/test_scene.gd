@@ -79,10 +79,10 @@ func _ready():
 	$RoundCount.text = str(Global.round_number)
 	_populate_spawn_queue()
 
-func _handle_powerup_selection(name: String):
+func _handle_powerup_selection(rarity: String, power_name: String):
 	get_tree().paused = false
 	SelectionScreen.hide()
-	Inventory.add_stack(name)
+	Inventory.add_stack(rarity, power_name)
 	Inventory.set_player_variables()
 	Player.refresh()
 	
