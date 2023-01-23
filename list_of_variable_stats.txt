@@ -1,0 +1,38 @@
+Variables
+- health_scaling
+- damage_mitigation
+- knockback_mitigation
+- projectile_knockback
+- damage_scaling
+- critical_hit_chance
+- projectile_speed_scaling
+- projectile_size
+- fire_rate_scaling
+- movement_speed_scaling
+- agility (combination of acceleration and deceleration)
+- dash_cooldown_scaling
+- base_health
+- health_regen
+- max_dash_count
+- curr_dash_count
+- min_dash_cooldown
+- base_damage
+- base_fire_rate
+- base_projectile_speed
+- wall_bounce_count
+- blink_enable
+- samira_bounce_count
+- undying_stacks
+
+
+Signals
+Player:
+- hit_by_enemy
+- damage_taken
+- damage_done
+- bullet_fired
+- died
+
+Player Projectile:
+- hit_enemy
+

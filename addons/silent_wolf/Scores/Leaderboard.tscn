@@ -1,0 +1,88 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://addons/silent_wolf/Scores/Leaderboard.gd" type="Script" id=1]
+[ext_resource path="res://addons/silent_wolf/Scores/assets/fonts/Comfortaa-Bold.ttf" type="FontFile" id=2]
+[ext_resource path="res://addons/silent_wolf/assets/fonts/Comfortaa-Bold.ttf" type="FontFile" id=3]
+[ext_resource path="res://addons/silent_wolf/common/SWButton.tscn" type="PackedScene" id=4]
+
+[sub_resource type="FontFile" id=1]
+size = 76
+font_data = ExtResource( 2 )
+
+[sub_resource type="FontFile" id=2]
+size = 32
+font_data = ExtResource( 3 )
+
+[sub_resource type="Theme" id=3]
+
+[node name="Leaderboard" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="OldBoard" type="MarginContainer" parent="."]
+visible = false
+offset_left = 50.0
+offset_right = 50.0
+offset_bottom = 40.0
+
+[node name="HighScores" type="TextureRect" parent="OldBoard"]
+offset_bottom = 40.0
+
+[node name="Board" type="VBoxContainer" parent="."]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 1884.0
+offset_bottom = 1071.0
+custom_constants/separation = 0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TitleContainer" type="CenterContainer" parent="Board"]
+offset_right = 1864.0
+offset_bottom = 85.0
+
+[node name="Label" type="Label" parent="Board/TitleContainer"]
+offset_left = 667.0
+offset_right = 1196.0
+offset_bottom = 85.0
+custom_fonts/font = SubResource( 1 )
+text = "Leaderboard"
+
+[node name="MessageContainer" type="CenterContainer" parent="Board"]
+visible = false
+offset_top = 89.0
+offset_right = 1864.0
+offset_bottom = 126.0
+
+[node name="TextMessage" type="Label" parent="Board/MessageContainer"]
+offset_left = 789.0
+offset_right = 1075.0
+offset_bottom = 37.0
+custom_fonts/font = SubResource( 2 )
+text = "Loading scores..."
+valign = 1
+
+[node name="HighScores" type="CenterContainer" parent="Board"]
+offset_top = 85.0
+offset_right = 1864.0
+offset_bottom = 185.0
+minimum_size = Vector2( 0, 100 )
+theme = SubResource( 3 )
+
+[node name="ScoreItemContainer" type="VBoxContainer" parent="Board/HighScores"]
+offset_left = 932.0
+offset_top = 50.0
+offset_right = 932.0
+offset_bottom = 50.0
+
+[node name="CloseButtonContainer" type="CenterContainer" parent="Board"]
+offset_top = 185.0
+offset_right = 1864.0
+offset_bottom = 303.0
+
+[node name="CloseButton" parent="Board/CloseButtonContainer" instance=ExtResource( 4 )]
+offset_left = 582.0
+offset_right = 1281.0
+offset_bottom = 118.0
+text = "Close Leaderboard"
+[connection signal="pressed" from="Board/CloseButtonContainer/CloseButton" to="." method="_on_CloseButton_pressed"]

@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://dywdcscb5ng3u"]
+
+[ext_resource type="Script" path="res://Enemies/round_enemy.gd" id="1"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_ythdx"]
+radius = 1.5
+height = 3.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ocgpg"]
+albedo_color = Color(0.796078, 0, 0, 1)
+metallic = 0.7
+metallic_specular = 1.0
+roughness = 0.5
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_6mcht"]
+radius = 1.5
+
+[node name="RoundEnemy" type="CharacterBody3D"]
+collision_layer = 8
+collision_mask = 31
+script = ExtResource("1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_ythdx")
+surface_material_override/0 = SubResource("StandardMaterial3D_ocgpg")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_6mcht")

@@ -1,0 +1,160 @@
+[gd_scene load_steps=9 format=3 uid="uid://cqx4vc2scvpli"]
+
+[ext_resource type="Script" path="res://Scenes/death_screen.gd" id="1_k4v3r"]
+[ext_resource type="FontFile" uid="uid://5yg3f0r12k0l" path="res://UIAssets/roundfont.ttf" id="1_nk4a4"]
+[ext_resource type="Script" path="res://Scenes/PlayAgainButton.gd" id="3_xugk8"]
+
+[sub_resource type="Theme" id="Theme_0fe38"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_11ei4"]
+font = ExtResource("1_nk4a4")
+font_size = 48
+
+[sub_resource type="LabelSettings" id="LabelSettings_lia72"]
+font = ExtResource("1_nk4a4")
+font_size = 40
+
+[sub_resource type="LabelSettings" id="LabelSettings_c5d88"]
+font = ExtResource("1_nk4a4")
+font_size = 24
+
+[sub_resource type="LabelSettings" id="LabelSettings_nckyo"]
+font = ExtResource("1_nk4a4")
+font_size = 12
+
+[node name="DeathScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_0fe38")
+script = ExtResource("1_k4v3r")
+
+[node name="Menu" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -125.0
+offset_top = 100.0
+offset_right = 125.0
+offset_bottom = 450.0
+grow_horizontal = 2
+
+[node name="GameOver" type="Label" parent="Menu"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -106.0
+offset_right = 106.0
+offset_bottom = 50.0
+grow_horizontal = 2
+text = "Game Over"
+label_settings = SubResource("LabelSettings_11ei4")
+horizontal_alignment = 1
+
+[node name="Score" type="Label" parent="Menu"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -69.5
+offset_top = 45.0
+offset_right = 69.5
+offset_bottom = 86.0
+grow_horizontal = 2
+text = "Round 001"
+label_settings = SubResource("LabelSettings_lia72")
+horizontal_alignment = 1
+
+[node name="SubmitScore" type="Label" parent="Menu"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -91.0
+offset_top = 87.0
+offset_right = 91.0
+offset_bottom = 113.0
+grow_horizontal = 2
+text = "Submit Your Score"
+label_settings = SubResource("LabelSettings_c5d88")
+
+[node name="NameInput" type="LineEdit" parent="Menu"]
+layout_mode = 1
+offset_top = 122.0
+offset_right = 199.0
+offset_bottom = 142.0
+theme_override_fonts/font = ExtResource("1_nk4a4")
+theme_override_font_sizes/font_size = 12
+placeholder_text = "Name"
+
+[node name="SuccessLabel" type="Label" parent="Menu"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -19.5
+offset_top = 120.0
+offset_right = 19.5
+offset_bottom = 140.0
+grow_horizontal = 2
+text = "Success"
+label_settings = SubResource("LabelSettings_nckyo")
+
+[node name="SubmitButton" type="Button" parent="Menu"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -51.0
+offset_top = 122.0
+offset_right = -1.0
+offset_bottom = -208.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_default_cursor_shape = 2
+theme_override_fonts/font = ExtResource("1_nk4a4")
+theme_override_font_sizes/font_size = 12
+text = "Submit"
+
+[node name="PlayAgainButton" type="Button" parent="Menu"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -75.0
+offset_top = -150.0
+offset_right = 75.0
+offset_bottom = -120.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+theme_override_fonts/font = ExtResource("1_nk4a4")
+disabled = true
+text = "Play Again"
+script = ExtResource("3_xugk8")
+
+[node name="ExitButton" type="Button" parent="Menu"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -75.0
+offset_top = -105.0
+offset_right = 75.0
+offset_bottom = -75.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+theme_override_fonts/font = ExtResource("1_nk4a4")
+text = "Exit"

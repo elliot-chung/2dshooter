@@ -1,0 +1,48 @@
+[gd_scene load_steps=6 format=3 uid="uid://usqve1cuymxo"]
+
+[ext_resource type="Script" path="res://Projectiles/Bullet.gd" id="1"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_yajio"]
+radius = 0.1
+
+[sub_resource type="SphereMesh" id="SphereMesh_opb5r"]
+radius = 0.1
+height = 0.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w06es"]
+metallic = 0.5
+roughness = 0.0
+emission_enabled = true
+emission = Color(1, 1, 1, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_8u8b5"]
+height = 0.05
+radius = 50.0
+
+[node name="CharacterBody3D" type="CharacterBody3D"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+collision_layer = 16
+collision_mask = 42
+script = ExtResource("1")
+AreaNodePath = NodePath("Area3D")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_yajio")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_opb5r")
+surface_material_override/0 = SubResource("StandardMaterial3D_w06es")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_energy = 4.0
+light_specular = 2.0
+shadow_enabled = true
+
+[node name="Area3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 40
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("CylinderShape3D_8u8b5")

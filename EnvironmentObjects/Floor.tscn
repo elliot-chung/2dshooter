@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3 uid="uid://b6bfk70se0qnm"]
+
+[ext_resource type="Texture2D" uid="uid://cb81yvsj0d1c6" path="res://EnvironmentObjects/Wood_02_2048.png" id="1_a3emh"]
+[ext_resource type="Texture2D" uid="uid://cap0w41cbqn4h" path="res://EnvironmentObjects/Grass_01_2048.png" id="1_ahbm6"]
+
+[sub_resource type="BoxShape3D" id="8"]
+size = Vector3(200, 2, 200)
+
+[sub_resource type="PlaneMesh" id="1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v0cyw"]
+albedo_color = Color(0.407843, 0.207843, 1, 1)
+albedo_texture = ExtResource("1_a3emh")
+metallic_specular = 0.15
+normal_enabled = true
+normal_texture = ExtResource("1_a3emh")
+heightmap_scale = 15.599
+heightmap_deep_parallax = true
+heightmap_min_layers = 8
+heightmap_max_layers = 32
+heightmap_texture = ExtResource("1_ahbm6")
+uv1_scale = Vector3(20, 20, 20)
+uv1_triplanar = true
+
+[node name="StaticBody3D" type="StaticBody3D"]
+collision_mask = 12
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+shape = SubResource("8")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+transform = Transform3D(100, 0, 0, 0, 1, 0, 0, 0, 100, 0, 0, 0)
+mesh = SubResource("1")
+surface_material_override/0 = SubResource("StandardMaterial3D_v0cyw")

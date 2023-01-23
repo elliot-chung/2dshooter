@@ -1,0 +1,170 @@
+All numbers are place-holders until balancing can happen
+
+Common Tier
+-------------
+name: Healthy
+Effect: 
+	Increase health_scaling +25% up to 250%
+	Continues down to 15% in five stacks.
+
+name: Sturdy
+Effect: 
+	Increase damage_mitigation by +10% up to 60%
+	Logarithmic scaling beyond 60%. 
+	Increase knockback_mitigation by -16.6% up to -100%
+
+name: Lonely
+Effect: 
+	Increase projectile_knockback by +10% up to 100%. 
+	Continues down to +5% in five stacks. 
+
+name: Satiated
+Effect:
+	Increase health_regen by +1%/s
+
+name: Deadly
+Effect: 
+	Increase damage_scaling +25% up to 250%.
+	Continues down to 15% in five stacks.
+
+name: Precise
+Effect: 
+	Increase critical_hit_chance +10% up to 100%
+	No effect after 10 stacks.
+
+name: Zippy
+Effect: 
+	Increase damage_scaling by +10%
+	Increase projectile_speed_scaling by +20% up to 200%. 
+	Continues down to 5% in five stacks.
+
+name: Slowpoke
+Effect:
+	Decrease projectile_speed_scaling by -20% capping at -80%.
+	Increase damage_scaling +45% up to 500% scaling down 
+	to 25% in five stacks.
+
+name: Bigger
+Effects:
+	Increase damage_scaling by +10%
+	Increase projectile_size by +10% up to 200%.
+	Continues down to +1% in five stacks. 
+
+name: Trigger Happy
+Effect:
+	Increase fire_rate_scaling +25% up to 250%
+	Continues down to 10% in five stacks.
+
+name: Faster
+Effect: 
+	Increase movement_speed_scaling +25% up to 250%
+	Continues down to 10% in five stacks.
+
+name: Impatient
+Effect: 
+	Increase dash_cooldown_scaling +10% up to 100%
+	Continues down to 5% in five stacks.
+	Cannot exceed hard_dash_cooldown_limit    
+
+name: Masochistic
+Effect:
+	Regenerate +5% of health over 2s after taking damage.
+	2s cooldown.
+	Logarithmic scaling after +35%
+
+Rare Tier
+-----------
+name: Volatile
+Effect: 
+	Increase base_health by +15 
+	When hit by a melee enemy, explode around the player.
+	Explosion damage depends on health_scaling.
+	Cooldown Scaling: (no effect after 14 levels)
+		50s
+		40s
+		30s
+		20s
+		10s
+		9s
+		8s
+		7s
+		6s
+		5s
+		4s
+		3s
+		2s
+		1s
+
+name: Vampiric
+Effect:
+	Firing costs X% of current health 
+	But also heal for X% of bullet damage
+	X scales by +5% each stack up to +45%
+	Logarithmic scaling beyond 45%
+
+name: Procrastinator
+Effect: 
+	+5% of damage is taken over 5s instead
+	Up to +45%, logarithmic scaling beyond. 
+
+name: Frugal
+Effect:
+	Increase dash_count by 1.
+
+name: Homing
+Effect:
+	Projectile release +1 homing projeciles on enemy impact.
+	Homing projectile damgage is +20% of projectile damage 
+	for each stack up to 100%.
+
+name: Explosive
+Effect:
+	Increase base_damage by +1.
+	20% of damage is done in an explosion around impact instead.
+	+10% explosion damage per iteration capped at 100%.
+	Explosion size depends on projectile_size.
+
+name: Rhythmic
+Effect:
+	Increase base_fire_rate by +1
+	Decrease damage_scaling -50% for each stack
+	If damage_scaling falls below -50%, logarithmic scaling. 
+
+name: Bouncy
+Effect:
+	Projectile bounces +1 times off the walls.
+	Increase base_projectile_speed +5
+
+Legendary Tier
+--------------
+name: Immune
+Effect:
+	Gain a shield that ignore the next hit
+	If it's a melee hit, return damage based on
+	current movement_speed
+	Base cooldown 50s
+	-10s per stack
+	No effects after 4 stacks.
+
+name: Instantaneous
+Effect:
+	Replace dash with a blink to cursor.
+	Increase base_dash_cooldown by +3 on first stack.
+	Decrease base_dash_cooldown by -1 on each additional stack.
+	No effect after 4 stacks. 
+
+name: Persistent
+Effect:
+	Projectile bounces +1 times to another enemy triggering all 
+	effects on impact.
+	No effect after 4 stacks.
+
+name: Undying
+Effect:
+	When you would die, come back with 20% health and lose a stack
+	of this effect
+
+
+
+
+
