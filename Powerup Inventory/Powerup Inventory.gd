@@ -123,6 +123,9 @@ var item_dictionary = {
 	}
 }
 
+func _calculate_stacks_uncapped(n: int, multiplier: float) -> float:
+	return n * multiplier
+
 func _calculate_stacks_capped(n: int, starting_multiplier: float, maximum: int) -> float:
 	n = min(n, maximum)
 	return n * starting_multiplier
@@ -152,18 +155,52 @@ func _calculate_stacks_log(n: int, starting_multiplier: float, dropoff_start: in
 
 func _calculate_multiplier(stat_name: String, n: int) -> float:
 	match stat_name:
-		"health_scaling":
-			return 1.0 + _calculate_stacks_linear(n, 0.25, 0.15, 10, 15)
-		"damage_mitigation":
+		"healthy_health_scaling":
+			return _calculate_stacks_linear(n, 0.25, 0.15, 10, 15)
+		"sturdy_damage_mitigation":
 			return _calculate_stacks_log(n, 0.1, 6)
-		"knockback_mitigation":
+		"sturdy_knockback_mitigation":
 			return _calculate_stacks_capped(n, 0.1, 10)
-		"movement_speed_scaling":
-			return 1.0 + _calculate_stacks_linear(n, 0.25, 0.1, 10, 15)
+		"lonely_projectile_knockback":
+			return _calculate_stacks_linear(n, .1, .5, 10, 15)
+		"satiated_health_regen":
+			return _calculate_stacks_uncapped(n, 1.0)
+		"deadly_damage_scaling":
+			return _calculate_stacks_linear(n, 0.25, 0.15, 10, 15)
+		"precise_critical_chance":
+			return _calculate_stacks_capped(n, 0.1, 10)
+		"zippy_damage_scaling":
+			return _calculate_stacks_uncapped(n, 0.1)
+		"zippy_projectile_speed_scaling":
+			return _calculate_stacks_linear(n, 0.20, 0.05, 10, 15)
+		"slowpoke_projectile_speed_scaling":
+			return _calculate_stacks_capped(n, -0.2, 4)
+		"slowpoke_damage_scaling":
+			return _calculate_stacks_linear(n, 0.45, 0.25, 10, 15)
+		"faster_movement_speed_scaling":
+			return _calculate_stacks_linear(n, 0.25, 0.1, 10, 15)
+		"trigger_finger_firerate_scaling":
+			return _calculate_stacks_linear(n, 0.25, 0.1, 10, 15)
+		"impacient_dash_cooldown_scaling":
+			return _calculate_stacks_log(n, -0.1, 7)
 		_:
-			return 1.0
+			return 0.0
 
 func set_player_variables():
+	var new_health_scaling: float = 1.0
+	var new_damage_mitigation: float = 0.0
+	var new_knockback_mitigation: float = 0.0
+	var new_projectile_knockback: float = 1.0
+	var new_health_regen: float = 0.0
+	var new_damage_scaling: float = 1.0
+	var new_critical_chance: float = 0.0
+	var new_projectile_speed_scaling: float = 1.0
+	var new_projectile_size: float = 1.0
+	var new_firerate_scaling: float = 1.0
+	var new_movement_speed_scaling: float = 1.0
+	var new_dash_cooldown_scaling: float = 1.0
+	
+
 	for rarity in item_dictionary:
 		for key in item_dictionary[rarity]: 
 			var count: int = item_dictionary[rarity][key].count
@@ -171,14 +208,48 @@ func set_player_variables():
 				continue
 			match key:
 				"healthy":
-					emit_signal("stat_changed", "health_scaling", _calculate_multiplier("health_scaling", count))
+					new_health_scaling += _calculate_multiplier("healthy_health_scaling", count)
 				"sturdy":
-					emit_signal("stat_changed", "damage_mitigation", _calculate_multiplier("damage_mitigation", count))
-					emit_signal("stat_changed", "knockback_mitigation", _calculate_multiplier("knockback_mitigation", count))
+					new_damage_mitigation += _calculate_multiplier("sturdy_damage_mitigation", count)
+					new_knockback_mitigation += _calculate_multiplier("sturdy_knockback_mitigation", count)
+				"lonely":
+					new_projectile_knockback += _calculate_multiplier("lonely_projectile_knockback", count)
+				"satiated":
+					new_health_regen += _calculate_multiplier("satiated_health_regen", count)
+				"deadly":
+					new_damage_scaling += _calculate_multiplier("deadly_damage_scaling", count)
+				"precise":
+					new_critical_chance += _calculate_multiplier("precise_critical_chance", count)
+				"zippy":
+					new_damage_scaling += _calculate_multiplier("zippy_damage_scaling", count)
+					new_projectile_speed_scaling += _calculate_multiplier("zippy_projectile_speed_scaling", count)
+				"slowpoke":
+					new_damage_scaling += _calculate_multiplier("slowpoke_damage_scaling", count)
+					new_projectile_speed_scaling += _calculate_multiplier("slowpoke_projectile_speed_scaling", count)
+				"bigger":
+					new_damage_scaling += _calculate_multiplier("bigger_damage_scaling", count)
+					new_projectile_size += _calculate_multiplier("bigger_projectile_size", count)
+				"trigger_happy":
+					new_firerate_scaling += _calculate_multiplier("trigger_happy_firerate_scaling", count)
 				"faster":
-					emit_signal("stat_changed", "movement_speed_scaling", _calculate_multiplier("movement_speed_scaling", count))
+					new_movement_speed_scaling += _calculate_multiplier("faster_movement_speed_scaling", count)
+				"impatient":
+					new_dash_cooldown_scaling += _calculate_multiplier("impatient_dash_cooldown_scaling", count)
 				_:
 					pass
+	
+	emit_signal("stat_changed", "health_scaling", new_health_scaling)
+	emit_signal("stat_changed", "damage_mitigation", new_damage_mitigation)
+	emit_signal("stat_changed", "knockback_mitigation", new_knockback_mitigation)
+	emit_signal("stat_changed", "projectile_knockback", new_projectile_knockback)
+	emit_signal("stat_changed", "health_regen", new_health_regen)
+	emit_signal("stat_changed", "damage_scaling", new_damage_scaling)
+	emit_signal("stat_changed", "critical_chance", new_critical_chance)
+	emit_signal("stat_changed", "projectile_speed_scaling", new_projectile_speed_scaling)
+	emit_signal("stat_changed", "projectile_size", new_projectile_size)
+	emit_signal("stat_changed", "firerate_scaling", new_firerate_scaling)
+	emit_signal("stat_changed", "movement_speed_scaling", new_movement_speed_scaling)
+	emit_signal("stat_changed", "dash_cooldown_scaling", new_dash_cooldown_scaling)
 
 func _toggle_stat_screen(toggle):
 	if toggle:
