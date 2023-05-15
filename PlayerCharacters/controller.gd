@@ -14,7 +14,7 @@ const HIT_AUDIO := preload("res://sound effects/player_hit.wav")
 const BASE_DASH_COOLDOWN := 5.0
 const DASH_LENGTH := 0.05
 const DASH_SPEED := 4.0
-const INVINCIBILITY_TIME := 0.2
+const INVINCIBILITY_TIME := 0.25
 const REGEN_TIME := 0.5
 const PAYBACK_COOLDOWN := 5.0
 const PAYBACK_KNOCKBACK_STRENGTH := 20.0
@@ -129,19 +129,20 @@ func _dot_damage(delta: float):
 	health -= damage
 
 func take_damage(damage: float, knockback: Vector3, melee: bool):
-	if _damage_timer != 0.0 || damage == 0:
-		return
-	_damage_timer = INVINCIBILITY_TIME
-	_regen_timer = REGEN_TIME
-	var mitigated_damage = damage * (1 - damage_mitigation)
-	_queued_dot_damage += dot_conversion * mitigated_damage
-	health -= (1 - dot_conversion) * mitigated_damage
+	if damage != 0:
+		if melee:
+			if _damage_timer > 0: return
+			_damage_timer = INVINCIBILITY_TIME
+		_regen_timer = REGEN_TIME
+		var mitigated_damage = damage * (1 - damage_mitigation)
+		_queued_dot_damage += dot_conversion * mitigated_damage
+		health -= (1 - dot_conversion) * mitigated_damage
+		
+		var player = AUDIO_PLAYER.instantiate()
+		player.stream = HIT_AUDIO
+		self.add_child(player)
 	
-	var player = AUDIO_PLAYER.instantiate()
-	player.stream = HIT_AUDIO
-	self.add_child(player)
-	
-	PlayerCamera.shake(5.0 * damage / max_health)
+		PlayerCamera.shake(3.5 * damage / max_health)
 	
 	if melee && melee_payback_damage > 0 && _payback_timer == 0.0: 
 		explode()

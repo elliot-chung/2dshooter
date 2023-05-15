@@ -97,7 +97,7 @@ var item_dictionary = {
 			"img_path": "res://Powerups/offense.png"
 		},
 		"explosive": {
-			"count": 1,
+			"count": 0,
 			"description": "Projectiles explode on hit",
 			"img_path": "res://Powerups/offense.png"
 		},
@@ -154,9 +154,9 @@ func _calculate_stacks_log(n: int, starting_multiplier: float, dropoff_start: in
 func _calculate_multiplier(stat_name: String, n: int) -> float:
 	match stat_name:
 		"healthy_health_scaling":
-			return _calculate_stacks_linear(n, 0.25, 0.15, 10, 15)
+			return _calculate_stacks_linear(n, 0.5, 0.3, 5, 10)
 		"sturdy_damage_mitigation":
-			return _calculate_stacks_log(n, 0.1, 6)
+			return _calculate_stacks_log(n, 0.2, 3)
 		"sturdy_knockback_mitigation":
 			return _calculate_stacks_capped(n, 0.1, 10)
 		"lonely_projectile_knockback":
