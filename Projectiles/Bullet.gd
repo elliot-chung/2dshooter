@@ -60,7 +60,7 @@ func _physics_process(delta):
 	var _collision = move_and_collide(_velocity_vector * delta)
 	if _collision != null:
 		var collider: CollisionObject3D = _collision.get_collider()
-		
+		add_collision_exception_with(collider)
 		if collider.get_collision_layer_value(2): # Colliding with wall
 			if _wall_bounce_count >= max_wall_bounces:
 				queue_free()
@@ -69,7 +69,6 @@ func _physics_process(delta):
 			var norm: Vector3 = _collision.get_normal()
 			_velocity_vector = _velocity_vector.bounce(norm)
 			direction = _velocity_vector.normalized()
-			add_collision_exception_with(collider)
 			_wall_bounce_count += 1
 		elif collider.get_collision_layer_value(4): # Colliding with enemy
 			var explosion_damage = _damage * explosion_conversion

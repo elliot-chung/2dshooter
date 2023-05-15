@@ -26,6 +26,7 @@ func _save_score():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	Global.round_number = 19
 	$Menu/Score.text = "Round " + ("%03d" % Global.round_number)
 	$Menu/PlayAgainButton.connect("pressed", _restart_game)
 	$Menu/ExitButton.connect("pressed", _exit_to_main_menu)

@@ -13,35 +13,42 @@ font_size = 32
 [node name="scoreline" type="Control"]
 layout_mode = 3
 anchor_left = 0.246
-anchor_top = 0.418
-anchor_right = 0.246
-anchor_bottom = 0.418
+anchor_top = 0.42
+anchor_right = 0.454
+anchor_bottom = 0.474
 offset_left = -0.391998
-offset_top = 0.135986
-offset_right = 240.608
-offset_bottom = 33.136
+offset_top = 2.84
+offset_right = -0.00805664
+offset_bottom = -0.152039
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Name" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = -1
-offset_right = 170.0
-offset_bottom = 40.0
+anchor_right = 0.768
+anchor_bottom = 0.943
+offset_right = -0.320007
+offset_bottom = -0.00500107
 text = "asdasdwerwerwerwer"
 label_settings = SubResource("LabelSettings_c0chl")
+vertical_alignment = 1
 clip_text = true
 
 [node name="Score" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 1.0
-anchor_top = 0.025
-anchor_right = 1.0
-anchor_bottom = 0.025
-offset_left = -90.0
-offset_bottom = 40.0
+anchor_left = 0.825
+anchor_top = 0.029
+anchor_right = 1.029
+anchor_bottom = 0.971
+offset_left = -1.52588e-05
+offset_top = -0.928
+offset_right = 0.0399933
+offset_bottom = 1.928
 grow_horizontal = 2
 grow_vertical = 2
 text = "ghj"
 label_settings = SubResource("LabelSettings_gh8ks")
 horizontal_alignment = 2
+vertical_alignment = 1
