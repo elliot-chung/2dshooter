@@ -1,8 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://cqx4vc2scvpli"]
+[gd_scene load_steps=10 format=3 uid="uid://fwo5jioalcrv"]
 
 [ext_resource type="Script" path="res://Scenes/death_screen.gd" id="1_k4v3r"]
 [ext_resource type="FontFile" uid="uid://5yg3f0r12k0l" path="res://UIAssets/roundfont.ttf" id="1_nk4a4"]
-[ext_resource type="Script" path="res://Scenes/PlayAgainButton.gd" id="3_xugk8"]
+[ext_resource type="PackedScene" uid="uid://bqhf7j1uw4c5p" path="res://UIAssets/loading_wheel.tscn" id="3_w1p3i"]
+[ext_resource type="Script" path="res://Scenes/play_again_button.gd" id="3_xugk8"]
 
 [sub_resource type="Theme" id="Theme_0fe38"]
 
@@ -34,14 +35,17 @@ script = ExtResource("1_k4v3r")
 
 [node name="Menu" type="Control" parent="."]
 layout_mode = 1
-anchors_preset = 5
+anchors_preset = 8
 anchor_left = 0.5
+anchor_top = 0.5
 anchor_right = 0.5
+anchor_bottom = 0.5
 offset_left = -125.0
-offset_top = 100.0
+offset_top = -175.0
 offset_right = 125.0
-offset_bottom = 450.0
+offset_bottom = 175.0
 grow_horizontal = 2
+grow_vertical = 2
 
 [node name="GameOver" type="Label" parent="Menu"]
 layout_mode = 1
@@ -92,16 +96,26 @@ theme_override_fonts/font = ExtResource("1_nk4a4")
 theme_override_font_sizes/font_size = 12
 placeholder_text = "Name"
 
+[node name="LoadingWheel" parent="Menu" instance=ExtResource("3_w1p3i")]
+layout_mode = 1
+anchors_preset = -1
+offset_left = -20.0
+offset_top = 149.0
+offset_right = 20.0
+offset_bottom = 189.0
+grow_horizontal = 2
+grow_vertical = 2
+
 [node name="SuccessLabel" type="Label" parent="Menu"]
 visible = false
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -19.5
-offset_top = 120.0
-offset_right = 19.5
-offset_bottom = 140.0
+offset_left = -25.0
+offset_top = 146.0
+offset_right = 14.0
+offset_bottom = 166.0
 grow_horizontal = 2
 text = "Success"
 label_settings = SubResource("LabelSettings_nckyo")

@@ -1,119 +1,51 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=5 format=3 uid="uid://de5nks52pxc80"]
 
-[ext_resource path="res://addons/silent_wolf/assets/fonts/Comfortaa-Bold.ttf" type="FontFile" id=2]
-[ext_resource path="res://addons/silent_wolf/Scores/assets/fonts/Comfortaa-Bold.ttf" type="FontFile" id=3]
-[ext_resource path="res://addons/silent_wolf/common/SWButton.tscn" type="PackedScene" id=4]
-[ext_resource path="res://addons/silent_wolf/examples/CustomLeaderboards/ReverseLeaderboard.gd" type="Script" id=5]
+[ext_resource type="Theme" uid="uid://d2eakbmaefnt6" path="res://addons/silent_wolf/assets/themes/sw_theme.tres" id="2_1tgjj"]
+[ext_resource type="PackedScene" uid="uid://clllbf6am8qdf" path="res://addons/silent_wolf/common/SWButton.tscn" id="4"]
+[ext_resource type="Script" path="res://addons/silent_wolf/examples/CustomLeaderboards/ReverseLeaderboard.gd" id="5"]
 
-[sub_resource type="FontFile" id=1]
-size = 76
-font_data = ExtResource( 3 )
-
-[sub_resource type="FontFile" id=7]
-size = 32
-font_data = ExtResource( 2 )
-
-[sub_resource type="Theme" id=2]
-
-[sub_resource type="StyleBoxFlat" id=3]
-content_margin_left = 23.0
-content_margin_right = 23.0
-content_margin_top = 23.0
-content_margin_bottom = 23.0
-bg_color = Color( 0.831373, 0.415686, 0.415686, 1 )
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-
-[sub_resource type="StyleBoxFlat" id=4]
-content_margin_left = 23.0
-content_margin_right = 23.0
-content_margin_top = 23.0
-content_margin_bottom = 23.0
-bg_color = Color( 0.831373, 0.415686, 0.415686, 1 )
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-
-[sub_resource type="StyleBoxFlat" id=5]
-content_margin_left = 23.0
-content_margin_right = 23.0
-content_margin_top = 23.0
-content_margin_bottom = 23.0
-bg_color = Color( 0.666667, 0.223529, 0.223529, 1 )
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-
-[sub_resource type="FontFile" id=6]
-size = 64
-font_data = ExtResource( 2 )
+[sub_resource type="Theme" id="2"]
 
 [node name="ReverseLeaderboard" type="Node2D"]
-script = ExtResource( 5 )
+script = ExtResource("5")
 
 [node name="Board" type="VBoxContainer" parent="."]
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 1884.0
-offset_bottom = 1071.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
+offset_left = 722.0
+offset_top = 293.0
+offset_right = 1287.0
+offset_bottom = 669.0
+theme = ExtResource("2_1tgjj")
+theme_override_constants/separation = 48
 
 [node name="TitleContainer" type="CenterContainer" parent="Board"]
-offset_right = 1864.0
-offset_bottom = 85.0
+layout_mode = 2
 
 [node name="Label" type="Label" parent="Board/TitleContainer"]
-offset_left = 502.0
-offset_right = 1362.0
-offset_bottom = 85.0
-custom_fonts/font = SubResource( 1 )
+layout_mode = 2
+theme_override_font_sizes/font_size = 72
 text = "Reverse Leaderboard"
 
 [node name="MessageContainer" type="CenterContainer" parent="Board"]
 visible = false
-offset_top = 89.0
-offset_right = 1864.0
-offset_bottom = 126.0
+layout_mode = 2
 
 [node name="TextMessage" type="Label" parent="Board/MessageContainer"]
-offset_left = 789.0
-offset_right = 1075.0
-offset_bottom = 37.0
-custom_fonts/font = SubResource( 7 )
+layout_mode = 2
 text = "Loading scores..."
-valign = 1
 
 [node name="HighScores" type="CenterContainer" parent="Board"]
-offset_top = 89.0
-offset_right = 1864.0
-offset_bottom = 189.0
-minimum_size = Vector2( 0, 100 )
-theme = SubResource( 2 )
+layout_mode = 2
+theme = SubResource("2")
 
 [node name="ScoreItemContainer" type="VBoxContainer" parent="Board/HighScores"]
-offset_left = 932.0
-offset_top = 50.0
-offset_right = 932.0
-offset_bottom = 50.0
+layout_mode = 2
 
 [node name="CloseButtonContainer" type="CenterContainer" parent="Board"]
-offset_top = 193.0
-offset_right = 1864.0
-offset_bottom = 311.0
+layout_mode = 2
 
-[node name="CloseButton" parent="Board/CloseButtonContainer" instance=ExtResource( 4 )]
-offset_left = 582.0
-offset_right = 1281.0
-offset_bottom = 118.0
-custom_styles/hover = SubResource( 3 )
-custom_styles/pressed = SubResource( 4 )
-custom_styles/normal = SubResource( 5 )
-custom_fonts/font = SubResource( 6 )
+[node name="CloseButton" parent="Board/CloseButtonContainer" instance=ExtResource("4")]
+custom_minimum_size = Vector2(600, 80)
+layout_mode = 2
 text = "Close Leaderboard"
+
 [connection signal="pressed" from="Board/CloseButtonContainer/CloseButton" to="." method="_on_CloseButton_pressed"]

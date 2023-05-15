@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3 uid="uid://cdvl25eyo84rw"]
+
+[ext_resource type="PackedScene" uid="uid://b22gbibvqjh8x" path="res://PlayerCharacters/BasePlayer.tscn" id="1_hjydo"]
+[ext_resource type="Script" path="res://Scenes/test_scene.gd" id="1_ustm8"]
+[ext_resource type="PackedScene" uid="uid://b6bfk70se0qnm" path="res://EnvironmentObjects/Floor.tscn" id="3_vqqw1"]
+[ext_resource type="PackedScene" uid="uid://c8mrmewk87cxj" path="res://Powerup Inventory/Powerup Inventory.tscn" id="4_pll3d"]
+
+[node name="Test Scene" type="Node3D"]
+script = ExtResource("1_ustm8")
+PlayerPath = NodePath("Player")
+InventoryPath = NodePath("Powerup Inventory")
+SpawnPosition = Vector3(10, 1, 10)
+
+[node name="Player" parent="." instance=ExtResource("1_hjydo")]
+projectile_knockback = 20.0
+
+[node name="Floor" parent="." instance=ExtResource("3_vqqw1")]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 14.7221, 0)
+light_color = Color(0.960784, 0.960784, 0.933333, 1)
+directional_shadow_blend_splits = true
+
+[node name="Powerup Inventory" parent="." instance=ExtResource("4_pll3d")]

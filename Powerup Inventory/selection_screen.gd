@@ -10,36 +10,37 @@ const POWER_PATH = "res://Powerups/"
 @export var CardPath3 := NodePath() 
 
 var item_data: Dictionary
-var Card1: Button
-var Card2: Button
-var Card3: Button
+var Card1: TextureRect
+var Card2: TextureRect
+var Card3: TextureRect
 
 func _set_img_desc(Card, rarity, name, img, desc):
-	var TextureRect:TextureRect = Card.get_node("VBoxContainer/TextureRect")
-	var NameLabel:Label = Card.get_node("VBoxContainer/Name")
-	var DescLabel:Label = Card.get_node("VBoxContainer/Description")
+	var TextureRect:TextureRect = Card.get_node("TextureRect")
+	var NameLabel:Label = Card.get_node("Name")
+	var DescLabel:Label = Card.get_node("Description")
 	
 	
 	Card.rarity = rarity
+	Card.texture = load("res://Powerup Inventory/" + rarity + ".png")
 	TextureRect.texture = load(img)
-	NameLabel.text = name
+	NameLabel.text = name.replace("_", " ")
 	DescLabel.text = desc
 	
 
 func _select_card1():
-	var name: String = Card1.get_node("VBoxContainer/Name").text
+	var name: String = Card1.get_node("Name").text.replace(" ", "_")
 	var rarity: String = Card1.rarity 
 	emit_signal("powerup_selected", rarity, name)
 	reset_options()
 
 func _select_card2():
-	var name: String = Card2.get_node("VBoxContainer/Name").text
+	var name: String = Card2.get_node("Name").text.replace(" ", "_")
 	var rarity: String = Card2.rarity 
 	emit_signal("powerup_selected", rarity, name)
 	reset_options()
 	
 func _select_card3():
-	var name: String = Card3.get_node("VBoxContainer/Name").text
+	var name: String = Card3.get_node("Name").text.replace(" ", "_")
 	var rarity: String = Card3.rarity 
 	emit_signal("powerup_selected", rarity, name)
 	reset_options()
@@ -54,14 +55,10 @@ func reset_options():
 		var rarity = ""
 		var key = ""
 		var i = 0
-		if rarity_factor < 75:
+		if rarity_factor < 80:
 			rarity = "common"
 			i = randi() % common_n
-			# while (i1 == i2):
-			# 	i2 = randi() % n
-			# while (i2 == i3):
-			# 	i3 = randi() % n
-		elif rarity_factor < 95:
+		elif rarity_factor < 99:
 			rarity = "rare"
 			i = randi() % rare_n
 		else:
@@ -70,7 +67,7 @@ func reset_options():
 		
 		key = item_data[rarity].keys()[i]	
 		
-		_set_img_desc(Card, rarity, key, POWER_PATH + key + ".png", item_data[rarity][key].description)
+		_set_img_desc(Card, rarity, key, item_data[rarity][key].img_path, item_data[rarity][key].description)
 	
 	
 
@@ -82,9 +79,9 @@ func _ready():
 	Card2 = get_node(CardPath2)
 	Card3 = get_node(CardPath3)
 	
-	Card1.connect("pressed",Callable(self,"_select_card1"))
-	Card2.connect("pressed",Callable(self,"_select_card2"))
-	Card3.connect("pressed",Callable(self,"_select_card3"))
+	Card1.get_node("Button").connect("pressed",Callable(self,"_select_card1"))
+	Card2.get_node("Button").connect("pressed",Callable(self,"_select_card2"))
+	Card3.get_node("Button").connect("pressed",Callable(self,"_select_card3"))
 	
 	reset_options()
 

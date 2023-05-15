@@ -1,9 +1,11 @@
 extends Node
 
-const version = "0.6.19"
+const version = "0.9.2"
 var godot_version = Engine.get_version_info().string
 
+const SWUtils = preload("res://addons/silent_wolf/utils/SWUtils.gd")
 const SWHashing = preload("res://addons/silent_wolf/utils/SWHashing.gd")
+const SWLogger = preload("res://addons/silent_wolf/utils/SWLogger.gd")
 
 @onready var Auth = Node.new()
 @onready var Scores = Node.new()
@@ -20,9 +22,8 @@ const SWHashing = preload("res://addons/silent_wolf/utils/SWHashing.gd")
 # See https://silentwolf.com for more details
 #
 var config = {
-	"api_key": "FmKF4gtm0Z2RbUAEU62kZ2OZoYLj4PYOURAPIKEY",
-	"game_id": "YOURGAMEID",
-	"game_version": "0.0.0",
+	"api_key": "",
+	"game_id": "RogueDemo",
 	"log_level": 0
 }
 
@@ -39,20 +40,20 @@ var auth_config = {
 	"saved_session_expiration_days": 30
 }
 
-var SWLogger = load("res://addons/silent_wolf/utils/SWLogger.gd")
-
 var auth_script = load("res://addons/silent_wolf/Auth/Auth.gd")
 var scores_script = load("res://addons/silent_wolf/Scores/Scores.gd")
 var players_script = load("res://addons/silent_wolf/Players/Players.gd")
 var multiplayer_script = load("res://addons/silent_wolf/Multiplayer/Multiplayer.gd")
 
+
 func _init():
-	print("SW Init timestamp: " + str(Time.get_time_dict_from_system()))
+	print("SW Init timestamp: " + str(SWUtils.get_timestamp()))
+
 
 func _ready():
 	# The following line would keep SilentWolf working even if the game tree is paused.
-	#process_mode = Node.PROCESS_MODE_ALWAYS
-	print("SW ready start timestamp: " + str(Time.get_time_dict_from_system()))
+	#pause_mode = Node.PAUSE_MODE_PROCESS
+	print("SW ready start timestamp: " + str(SWUtils.get_timestamp()))
 	Auth.set_script(auth_script)
 	add_child(Auth)
 	Scores.set_script(scores_script)
@@ -61,19 +62,24 @@ func _ready():
 	add_child(Players)
 	Multiplayer.set_script(multiplayer_script)
 	add_child(Multiplayer)
-	print("SW ready end timestamp: " + str(Time.get_time_dict_from_system()))
+	print("SW ready end timestamp: " + str(SWUtils.get_timestamp()))
+
 
 func configure(json_config):
 	config = json_config
 
+
 func configure_api_key(api_key):
 	config.apiKey = api_key
+
 
 func configure_game_id(game_id):
 	config.game_id = game_id
 
+
 func configure_game_version(game_version):
 	config.game_version = game_version
+
 
 ##################################################################
 # Log levels:
@@ -84,18 +90,23 @@ func configure_game_version(game_version):
 func configure_log_level(log_level):
 	config.log_level = log_level
 
+
 func configure_scores(json_scores_config):
 	scores_config = json_scores_config
 
+
 func configure_scores_open_scene_on_close(scene):
 	scores_config.open_scene_on_close = scene
-	
+
+
 func configure_auth(json_auth_config):
 	auth_config = json_auth_config
 
+
 func configure_auth_redirect_to_scene(scene):
 	auth_config.open_scene_on_close = scene
-	
+
+
 func configure_auth_session_duration(duration):
 	auth_config.session_duration = duration
 
@@ -105,13 +116,29 @@ func free_request(weak_ref, object):
 		object.queue_free()
 
 
-func send_get_request(http_node, request_url):
+func prepare_http_request() -> Dictionary:
+	var request = HTTPRequest.new()
+	var weakref = weakref(request)
+	if OS.get_name() != "Web":
+		request.set_use_threads(true)
+	request.process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().get_root().call_deferred("add_child", request)
+	var return_dict = {
+		"request": request, 
+		"weakref": weakref
+	}
+	return return_dict
+
+
+func send_get_request(http_node: HTTPRequest, request_url: String):
 	var headers = [
 		"x-api-key: " + SilentWolf.config.api_key, 
 		"x-sw-game-id: " + SilentWolf.config.game_id,
 		"x-sw-plugin-version: " + SilentWolf.version,
-		"x-sw-godot-version: " + godot_version
+		"x-sw-godot-version: " + godot_version 
 	]
+	headers = add_jwt_token_headers(headers)
+	print("GET headers: " + str(headers))
 	if !http_node.is_inside_tree():
 		await get_tree().create_timer(0.01).timeout
 	SWLogger.debug("Method: GET")
@@ -128,29 +155,67 @@ func send_post_request(http_node, request_url, payload):
 		"x-sw-plugin-version: " + SilentWolf.version,
 		"x-sw-godot-version: " + godot_version 
 	]
-	# TODO: this os specific to post_new_score - should be made generic 
-	# or make a section for each type of post request with inetgrity check
-	# (e.g. also push player data)
-	if "post_new_score" in request_url:
-		SWLogger.info("We're doing a post score")
-		var player_name = payload["player_name"]
-		var player_score = payload["score"]
-		var timestamp = Time.get_ticks_msec()
-		var to_be_hashed = [player_name, player_score, timestamp]
-		SWLogger.debug("send_post_request to_be_hashed: " + str(to_be_hashed))
-		var hashed = SWHashing.hash_values(to_be_hashed)
-		SWLogger.debug("send_post_request hashed: " + str(hashed))
-		headers.append("x-sw-act-tmst: " + str(timestamp))
-		headers.append("x-sw-act-dig: " + hashed)
+	headers = add_jwt_token_headers(headers)
+	print("POST headers: " + str(headers))
+	# TODO: This should in fact be the case for all POST requests, make the following code more generic
+	#var post_request_paths: Array[String] = ["post_new_score", "push_player_data"]
+	var paths_with_values_to_hash: Dictionary = {
+		"save_score": ["player_name", "score"],
+		"push_player_data": ["player_name", "player_data"]
+	}
+	for path in paths_with_values_to_hash:
+		var values_to_hash = []
+		if check_string_in_url(path, request_url):
+			SWLogger.debug("Computing hash for " + str(path))
+			var fields_to_hash = paths_with_values_to_hash[path]
+			for field in fields_to_hash:
+				var value = payload[field]
+				# if the data is a dictionary (e.g. player data, stringify it before hashing)
+				if typeof(payload[field]) == TYPE_DICTIONARY:
+					value = JSON.stringify(payload[field])
+				values_to_hash = values_to_hash + [value]
+			var timestamp = SWUtils.get_timestamp()
+			values_to_hash = values_to_hash + [timestamp]
+			SWLogger.debug(str(path) + " to_be_hashed: " + str(values_to_hash))
+			var hashed = SWHashing.hash_values(values_to_hash)
+			SWLogger.debug("hash value: " + str(hashed))
+			headers.append("x-sw-act-tmst: " + str(timestamp))
+			headers.append("x-sw-act-dig: " + hashed)
+			break
 	var use_ssl = true
 	if !http_node.is_inside_tree():
 		await get_tree().create_timer(0.01).timeout
 	var query = JSON.stringify(payload)
-	SWLogger.info("Method: POST")
-	SWLogger.info("request_url: " + str(request_url))
-	SWLogger.info("headers: " + str(headers))
-	SWLogger.info("query: " + str(query))
-	http_node.request(request_url, headers, use_ssl, HTTPClient.METHOD_POST, query)
+	SWLogger.debug("Method: POST")
+	SWLogger.debug("request_url: " + str(request_url))
+	SWLogger.debug("headers: " + str(headers))
+	SWLogger.debug("query: " + str(query))
+	http_node.request(request_url, headers, HTTPClient.METHOD_POST, query)
+
+
+func add_jwt_token_headers(headers: Array) -> Array:
+	if Auth.sw_id_token != null:
+		headers.append("x-sw-id-token: " + Auth.sw_id_token)
+	if Auth.sw_access_token != null:
+		headers.append("x-sw-access-token: " + Auth.sw_access_token)
+	return headers
+
+
+func check_string_in_url(test_string: String, url: String) -> bool:
+	return test_string in url
+
+
+func build_result(body: Dictionary) -> Dictionary:
+	var error = null
+	var success = false
+	if "error" in body:
+		error = body.error
+	if "success" in body:
+		success = body.success
+	return {
+		"success": success,
+		"error": error
+	}
 
 
 func check_auth_ready():

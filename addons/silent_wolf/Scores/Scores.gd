@@ -1,23 +1,19 @@
 extends Node
 
-const CommonErrors = preload("res://addons/silent_wolf/common/CommonErrors.gd")
 const SWLogger = preload("res://addons/silent_wolf/utils/SWLogger.gd")
 const UUID = preload("res://addons/silent_wolf/utils/UUID.gd")
 const SWHashing = preload("res://addons/silent_wolf/utils/SWHashing.gd")
-
-# legacy signals
-signal scores_received
-signal position_received
-signal score_posted
+const SWUtils = preload("res://addons/silent_wolf/utils/SWUtils.gd")
 
 # new signals
-signal sw_scores_received
-signal sw_player_scores_received
-signal sw_position_received
-signal sw_scores_around_received
-signal sw_score_posted
-signal sw_leaderboard_wiped
-signal sw_score_deleted
+signal sw_get_scores_complete
+signal sw_get_player_scores_complete
+signal sw_top_player_score_complete
+signal sw_get_position_complete
+signal sw_get_scores_around_complete
+signal sw_save_score_complete
+signal sw_wipe_leaderboard_complete
+signal sw_delete_score_complete
 
 # leaderboard scores by leaderboard name
 var leaderboards = {}
@@ -29,6 +25,7 @@ var ldboard_config = {}
 # contains only the scores from one leaderboard at a time
 var scores = []
 var player_scores = []
+var player_top_score = null
 var local_scores = []
 #var custom_local_scores = []
 var score_id = ""
@@ -42,437 +39,345 @@ var scores_below  = []
 # latest number of scores to be fetched from the backend
 var latest_max = 10
 
+var SaveScore = null
+var GetScores = null
 var ScorePosition = null
 var ScoresAround = null
-var HighScores = null
 var ScoresByPlayer = null
-var PostScore = null
+var TopScoreByPlayer = null
 var WipeLeaderboard = null
 var DeleteScore = null
 
 # wekrefs
+var wrSaveScore = null
+var wrGetScores = null
 var wrScorePosition = null
 var wrScoresAround = null
-var wrHighScores = null
 var wrScoresByPlayer = null
-var wrPostScore = null
+var wrTopScoreByPlayer = null
 var wrWipeLeaderboard = null
 var wrDeleteScore = null
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass
-	#connect("request_completed",Callable(self,"_on_Scores_request_completed"))
-	#setup_request_timer()
-	
-func get_score_position(score, ldboard_name="main"):
-	var score_id = null
-	var score_value = null
-	print("score: " + str(score))
-	if UUID.is_uuid(str(score)):
-		score_id = score 
-	else:
-		score_value = score
-	ScorePosition = HTTPRequest.new()
-	wrScorePosition = weakref(ScorePosition)
-	if OS.get_name() != "HTML5":
-		ScorePosition.set_use_threads(true)
-	get_tree().get_root().call_deferred("add_child", ScorePosition)
-	ScorePosition.connect("request_completed",Callable(self,"_on_GetScorePosition_request_completed"))
-	SWLogger.info("Calling SilentWolf to get score position")
-	var game_id = SilentWolf.config.game_id
-	var game_version = SilentWolf.config.game_version
-	var payload = { "game_id": game_id, "game_version": game_version, "ldboard_name": ldboard_name }
-	if score_id:
-		payload["score_id"] = score_id
-	if score_value:
-		payload["score_value"] = score_value
-	var request_url = "https://api.silentwolf.com/get_score_position"
-	send_post_request(ScorePosition, request_url, payload)
-	return self
-
-
-func get_scores_around(score, scores_to_fetch=3, ldboard_name="main"):
-	var score_id = null
-	var score_value = null
-	print("score: " + str(score))
-	if UUID.is_uuid(str(score)):
-		score_id = score 
-	else:
-		score_value = score
-	ScoresAround = HTTPRequest.new()
-	wrScoresAround = weakref(ScoresAround)
-	if OS.get_name() != "HTML5":
-		ScoresAround.set_use_threads(true)
-	get_tree().get_root().call_deferred("add_child",ScoresAround)
-	ScoresAround.connect("request_completed",Callable(self,"_on_ScoresAround_request_completed"))
-	SWLogger.info("Calling SilentWolf backend to scores above and below a certain score...")
-	# resetting the latest_number value in case the first requests times out, we need to request the same amount of top scores in the retry
-	#latest_max = maximum
-	var game_id = SilentWolf.config.game_id
-	var game_version = SilentWolf.config.game_version
-	var request_url = "https://api.silentwolf.com/get_scores_around/" + str(game_id) + "?version=" + str(game_version) + "&scores_to_fetch=" + str(scores_to_fetch)  + "&ldboard_name=" + str(ldboard_name) + "&score_id=" + str(score_id) + "&score_value=" + str(score_value)
-	send_get_request(ScoresAround, request_url)
-	return self
-
-func get_high_scores(maximum=10, ldboard_name="main", period_offset=0):
-	HighScores = HTTPRequest.new()
-	wrHighScores = weakref(HighScores)
-	if OS.get_name() != "HTML5":
-		HighScores.set_use_threads(true)
-	get_tree().get_root().call_deferred("add_child", HighScores)
-	HighScores.connect("request_completed",Callable(self,"_on_GetHighScores_request_completed"))
-	SWLogger.info("Calling SilentWolf backend to get scores...")
-	# resetting the latest_number value in case the first requests times out, we need to request the same amount of top scores in the retry
-	latest_max = maximum
-	var game_id = SilentWolf.config.game_id
-	var game_version = SilentWolf.config.game_version
-	var request_url = "https://api.silentwolf.com/get_top_scores/" + str(game_id) + "?version=" + str(game_version) + "&max=" + str(maximum)  + "&ldboard_name=" + str(ldboard_name) + "&period_offset=" + str(period_offset)
-	send_get_request(HighScores, request_url)
-	return self
-
-
-func get_scores_by_player(player_name, maximum=10, ldboard_name="main", period_offset=0):
-	print("get_scores_by_player, player_name = " + str(player_name))
-	ScoresByPlayer = HTTPRequest.new()
-	wrScoresByPlayer = weakref(ScoresByPlayer)
-	if OS.get_name() != "HTML5":
-		ScoresByPlayer.set_use_threads(true)
-	get_tree().get_root().call_deferred("add_child", ScoresByPlayer)
-	ScoresByPlayer.connect("request_completed",Callable(self,"_on_GetScoresByPlayer_request_completed"))
-	SWLogger.info("Calling SilentWolf backend to get scores for player: " + str(player_name))
-	# resetting the latest_number value in case the first requests times out, we need to request the same amount of top scores in the retry
-	latest_max = maximum
-	var game_id = SilentWolf.config.game_id
-	var game_version = SilentWolf.config.game_version
-	var request_url = "https://api.silentwolf.com/get_scores_by_player/" + str(game_id) + "?version=" + str(game_version) + "&max=" + str(maximum)  + "&ldboard_name=" + str(ldboard_name.uri_encode()) + "&player_name=" + str(player_name.uri_encode()) + "&period_offset=" + str(period_offset)
-	send_get_request(ScoresByPlayer, request_url)
-	return self
-
-
-func add_to_local_scores(game_result, ld_name="main"):
-	var local_score = { "score_id": game_result.score_id, "game_id_version" : game_result.game_id + ";"  + game_result.game_version, "player_name": game_result.player_name, "score": game_result.score }
-	local_scores.append(local_score)
-	#if ld_name == "main":
-		# TODO: even here, since the main leader board can be customized, we can't just blindly write to the local_scores variable and pull up the scores later
-		# we need to know what type of leader board it is, or local caching is useless
-		#local_scores.append(local_score)
-	#else:
-		#if ld_name in custom_local_scores:
-			# TODO: problem: can't just append here - what if it's a highest/latest/accumulator/time-based leaderboard?
-			# maybe don't use local scores for these special cases? performance?
-			#custom_local_scores[ld_name].append(local_score)
-		#else:
-			#custom_local_scores[ld_name] = [local_score]
-	SWLogger.debug("local scores: " + str(local_scores))
-
 
 # metadata, if included should be a dictionary
-func persist_score(player_name, score, ldboard_name="main", metadata={}):
+# The score attribute could be either a score_value (int) or score_id (String)
+func save_score(player_name: String, score, ldboard_name: String="main", metadata: Dictionary={}) -> Node:
 	# player_name must be present
 	if player_name == null or player_name == "":
 		SWLogger.error("ERROR in SilentWolf.Scores.persist_score - please enter a valid player name")
 	elif typeof(ldboard_name) != TYPE_STRING:
 		# check that ldboard_name, if present is a String
-		SWLogger.error("ERROR in ilentWolf.Scores.persist_score - leaderboard name must be a String")
+		SWLogger.error("ERROR in SilentWolf.Scores.persist_score - leaderboard name must be a String")
 	elif typeof(metadata) != TYPE_DICTIONARY:
 		# check that metadata, if present, is a dictionary
 		SWLogger.error("ERROR in SilentWolf.Scores.persist_score - metadata must be a dictionary")
 	else:
-		PostScore = HTTPRequest.new()
-		wrPostScore = weakref(PostScore)
-		if OS.get_name() != "HTML5":
-			PostScore.set_use_threads(true)
-		get_tree().get_root().call_deferred("add_child", PostScore)
-		PostScore.connect("request_completed",Callable(self,"_on_PostNewScore_request_completed"))
+		var prepared_http_req = SilentWolf.prepare_http_request()
+		SaveScore = prepared_http_req.request
+		wrSaveScore = prepared_http_req.weakref
+		SaveScore.request_completed.connect(_on_SaveScore_request_completed)
 		SWLogger.info("Calling SilentWolf backend to post new score...")
 		var game_id = SilentWolf.config.game_id
-		var game_version = SilentWolf.config.game_version
 		
 		var score_uuid = UUID.generate_uuid_v4()
 		score_id = score_uuid
 		var payload = { 
 			"score_id" : score_id, 
 			"player_name" : player_name, 
-			"game_id": game_id, 
-			"game_version": game_version, 
+			"game_id": game_id,  
 			"score": score, 
 			"ldboard_name": ldboard_name 
 		}
-		print("!metadata.is_empty(): " + str(!metadata.is_empty()))
+		print("!metadata.empty(): " + str(!metadata.is_empty()))
 		if !metadata.is_empty():
 			print("metadata: " + str(metadata))
 			payload["metadata"] = metadata
 		SWLogger.debug("payload: " + str(payload))
 		# also add to local scores
 		add_to_local_scores(payload)
-		var request_url = "https://api.silentwolf.com/post_new_score"
-		send_post_request(PostScore, request_url, payload)
-	return self
-		
-# Deletes all your scores for your game and version
-# Scores are permanently deleted, no going back!
-func wipe_leaderboard(ldboard_name='main'):
-	WipeLeaderboard = HTTPRequest.new()
-	wrWipeLeaderboard = weakref(WipeLeaderboard)
-	if OS.get_name() != "HTML5":
-		WipeLeaderboard.set_use_threads(true)
-	get_tree().get_root().call_deferred("add_child", WipeLeaderboard)
-	WipeLeaderboard.connect("request_completed",Callable(self,"_on_WipeLeaderboard_request_completed"))
-	SWLogger.info("Calling SilentWolf backend to wipe leaderboard...")
-	var game_id = SilentWolf.config.game_id
-	var game_version = SilentWolf.config.game_version
-	var payload = { "game_id": game_id, "game_version": game_version, "ldboard_name": ldboard_name }
-	var request_url = "https://api.silentwolf.com/wipe_leaderboard"
-	send_post_request(WipeLeaderboard, request_url, payload)
+		var request_url = "https://api.silentwolf.com/save_score"
+		SilentWolf.send_post_request(SaveScore, request_url, payload)
 	return self
 
 
-func delete_score(score_id):
-	DeleteScore = HTTPRequest.new()
-	wrDeleteScore = weakref(DeleteScore)
-	if OS.get_name() != "HTML5":
-		DeleteScore.set_use_threads(true)
-	get_tree().get_root().call_deferred("add_child", DeleteScore)
-	DeleteScore.connect("request_completed",Callable(self,"_on_DeleteScore_request_completed"))
-	SWLogger.info("Calling SilentWolf to delete a score")
-	var game_id = SilentWolf.config.game_id
-	var game_version = SilentWolf.config.game_version
-	var request_url = "https://api.silentwolf.com/delete_score?game_id=" + str(game_id) + "&game_version=" + str(game_version) + "&score_id=" + str(score_id)
-	send_get_request(DeleteScore, request_url)
+func _on_SaveScore_request_completed(result, response_code, headers, body) -> void:
+	var status_check = SWUtils.check_http_response(response_code, headers, body)
+	SilentWolf.free_request(wrSaveScore, SaveScore)
+	
+	if status_check:
+		var json_body = JSON.parse_string(body.get_string_from_utf8())
+		var sw_result: Dictionary = SilentWolf.build_result(json_body)
+		if json_body.success:
+			SWLogger.info("SilentWolf save score success.")
+			sw_result["score_id"] = json_body.score_id
+		else:
+			SWLogger.error("SilentWolf save score failure: " + str(json_body.error))
+		sw_save_score_complete.emit(sw_result)
+
+
+func get_scores(maximum: int=10, ldboard_name: String="main", period_offset: int=0) -> Node:
+	var prepared_http_req = SilentWolf.prepare_http_request()
+	GetScores = prepared_http_req.request
+	wrGetScores = prepared_http_req.weakref
+	GetScores.request_completed.connect(_on_GetScores_request_completed)
+	SWLogger.info("Calling SilentWolf backend to get scores...")
+	# resetting the latest_number value in case the first requests times out, we need to request the same amount of top scores in the retry
+	latest_max = maximum
+	var request_url = "https://api.silentwolf.com/get_scores/" + str(SilentWolf.config.game_id) + "?max=" + str(maximum)  + "&ldboard_name=" + str(ldboard_name) + "&period_offset=" + str(period_offset)
+	SilentWolf.send_get_request(GetScores, request_url)
 	return self
-	
-	
-func _on_GetScoresByPlayer_request_completed(result, response_code, headers, body):
-	SWLogger.info("GetScoresByPlayer request completed")
-	var status_check = CommonErrors.check_status_code(response_code)
-	#print("client status: " + str(HighScores.get_http_client_status()))
-	#HighScores.queue_free()
-	SilentWolf.free_request(wrScoresByPlayer, ScoresByPlayer)
-	SWLogger.debug("response code: " + str(response_code))
-	SWLogger.debug("response headers: " + str(headers))
-	SWLogger.debug("response body: " + str(body.get_string_from_utf8()))
-	
-	if status_check:
-		var test_json_conv = JSON.new()
-		test_json_conv.parse(body.get_string_from_utf8())
-		var json = test_json_conv.get_data()
-		print("json: " + str(json))
-		var response = json.result
-		if response == null:
-			SWLogger.error("No data returned in GetScoresByPlayer response. Leaderboard may be empty")
-			emit_signal("sw_player_scores_received", 'No Leaderboard found', scores)
-		elif "message" in response.keys() and response.message == "Forbidden":
-			SWLogger.error("You are not authorized to call the SilentWolf API - check your API key configuration: https://silentwolf.com/leaderboard")
-		else:
-			SWLogger.info("SilentWolf get scores by player success")
-			if "top_scores" in response:
-				player_scores = response.top_scores
-				SWLogger.debug("scores: " + str(scores))
-				var ld_name = response.ld_name
-				#print("ld_name: " + str(ld_name))
-				var ld_config = response.ld_config
-				var player_name = response.player_name
-				#print("latest_scores: " + str(leaderboards))
-				emit_signal("sw_player_scores_received", player_scores)
 
 
-func _on_GetHighScores_request_completed(result, response_code, headers, body):
-	SWLogger.info("GetHighScores request completed")
-	var status_check = CommonErrors.check_status_code(response_code)
-	#print("client status: " + str(HighScores.get_http_client_status()))
-	#HighScores.queue_free()
-	SilentWolf.free_request(wrHighScores, HighScores)
-	SWLogger.debug("response code: " + str(response_code))
-	SWLogger.debug("response headers: " + str(headers))
-	SWLogger.debug("response body: " + str(body.get_string_from_utf8()))
+func _on_GetScores_request_completed(result, response_code, headers, body) -> void:
+	var status_check = SWUtils.check_http_response(response_code, headers, body)
+	SilentWolf.free_request(wrGetScores, GetScores)
 	
 	if status_check:
-		var test_json_conv = JSON.new()
-		test_json_conv.parse(body.get_string_from_utf8())
-		var json = test_json_conv.get_data()
-		var response = json.result
-		if response == null:
-			SWLogger.error("No data returned in GetHighScores response. Leaderboard may be empty")
-			emit_signal("sw_scores_received", 'No Leaderboard found', scores)
-			emit_signal("scores_received", scores)
-		elif "message" in response.keys() and response.message == "Forbidden":
-			SWLogger.error("You are not authorized to call the SilentWolf API - check your API key configuration: https://silentwolf.com/leaderboard")
-		else:
-			SWLogger.info("SilentWolf get high score success")
-			if "top_scores" in response:
-				scores = response.top_scores
-				SWLogger.debug("scores: " + str(scores))
-				var ld_name = response.ld_name
-				#print("ld_name: " + str(ld_name))
-				var ld_config = response.ld_config
-				#print("ld_config: " + str(ld_config))
-				if "period_offset" in response:
-					var period_offset = str(response["period_offset"])
-					leaderboards_past_periods[ld_name + ";" + period_offset] = scores
-				else:
-					leaderboards[ld_name] = scores
-				ldboard_config[ld_name] = ld_config
-				#print("latest_scores: " + str(leaderboards))
-				emit_signal("sw_scores_received", ld_name, scores)
-				emit_signal("scores_received", scores)
-	#var retries = 0
-	#request_timer.stop()
-	
-func _on_DeleteScore_request_completed(result, response_code, headers, body):
-	SWLogger.info("DeleteScore request completed")
-	var status_check = CommonErrors.check_status_code(response_code)
-	SilentWolf.free_request(wrDeleteScore, DeleteScore)
-	SWLogger.debug("response headers: " + str(response_code))
-	SWLogger.debug("response headers: " + str(headers))
-	SWLogger.debug("response body: " + str(body.get_string_from_utf8()))
-	
-	if status_check:
-		var test_json_conv = JSON.new()
-		test_json_conv.parse(body.get_string_from_utf8())
-		var json = test_json_conv.get_data()
-		var response = json.result
-		if "message" in response.keys() and response.message == "Forbidden":
-			SWLogger.error("You are not authorized to call the SilentWolf API - check your API key configuration: https://silentwolf.com/leaderboard")
-		else:
-			SWLogger.info("SilentWolf delete score success")
-			emit_signal("sw_score_deleted")
-
-		
-func _on_PostNewScore_request_completed(result, response_code, headers, body):
-	SWLogger.info("PostNewScore request completed")
-	var status_check = CommonErrors.check_status_code(response_code)
-	#PostScore.queue_free()
-	SilentWolf.free_request(wrPostScore, PostScore)
-	SWLogger.debug("response headers: " + str(response_code))
-	SWLogger.debug("response headers: " + str(headers))
-	SWLogger.debug("response body: " + str(body.get_string_from_utf8()))
-	
-	if status_check:
-		var test_json_conv = JSON.new()
-		test_json_conv.parse(body.get_string_from_utf8())
-		var json = test_json_conv.get_data()
-		var response = json.result
-		if "message" in response.keys() and response.message == "Forbidden":
-			SWLogger.error("You are not authorized to call the SilentWolf API - check your API key configuration: https://silentwolf.com/leaderboard")
-		else:
-			SWLogger.info("SilentWolf post score success: " + str(response_code))
-			if "score_id" in response:
-				emit_signal("sw_score_posted", response["score_id"])
+		var json_body = JSON.parse_string(body.get_string_from_utf8())
+		var sw_result: Dictionary = SilentWolf.build_result(json_body)
+		if json_body.success:
+			SWLogger.info("SilentWolf get scores success, found " + str(json_body.top_scores.size()) + " scores.")
+			scores = translate_score_fields_in_array(json_body.top_scores)
+			SWLogger.debug("Scores: " + str(scores))
+			var ld_name = json_body.ld_name
+			var ld_config = json_body.ld_config
+			if "period_offset" in json_body:
+				var period_offset = str(json_body["period_offset"])
+				leaderboards_past_periods[ld_name + ";" + period_offset] = scores
 			else:
-				emit_signal("sw_score_posted")
-				emit_signal("score_posted")
+				leaderboards[ld_name] = scores
+			ldboard_config[ld_name] = ld_config
+			sw_result["scores"] = scores
+			sw_result["ld_name"] = ld_name
+		else:
+			SWLogger.error("SilentWolf get scores failure: " + str(json_body.error))
+		sw_get_scores_complete.emit(sw_result)
 
 
-func _on_GetScorePosition_request_completed(result, response_code, headers, body):
-	SWLogger.info("GetScorePosition request completed")
-	var status_check = CommonErrors.check_status_code(response_code)
-	#ScorePosition.queue_free()
-	SilentWolf.free_request(wrScorePosition, ScorePosition)
-	SWLogger.debug("response headers: " + str(response_code))
-	SWLogger.debug("response headers: " + str(headers))
-	SWLogger.debug("response body: " + str(body.get_string_from_utf8()))
+func get_scores_by_player(player_name: String, maximum: int=10, ldboard_name: String="main", period_offset: int=0) -> Node:
+	if player_name == null:
+		SWLogger.error("Error in SilentWolf.Scores.get_scores_by_player: provided player_name is null")
+	else:
+		var prepared_http_req = SilentWolf.prepare_http_request()
+		ScoresByPlayer = prepared_http_req.request
+		wrScoresByPlayer = prepared_http_req.weakref
+		ScoresByPlayer.request_completed.connect(_on_GetScoresByPlayer_request_completed)
+		SWLogger.info("Calling SilentWolf backend to get scores for player: " + str(player_name))
+		# resetting the latest_number value in case the first requests times out, we need to request the same amount of top scores in the retry
+		latest_max = maximum
+		var request_url = "https://api.silentwolf.com/get_scores_by_player/" + str(SilentWolf.config.game_id) + "?max=" + str(maximum)  + "&ldboard_name=" + str(ldboard_name.uri_encode()) + "&player_name=" + str(player_name.uri_encode()) + "&period_offset=" + str(period_offset)
+		SilentWolf.send_get_request(ScoresByPlayer, request_url)
+	return self
+
+
+func _on_GetScoresByPlayer_request_completed(result, response_code, headers, body) -> void:
+	var status_check = SWUtils.check_http_response(response_code, headers, body)
+	SilentWolf.free_request(wrScoresByPlayer, ScoresByPlayer)
 	
 	if status_check:
-		var test_json_conv = JSON.new()
-		test_json_conv.parse(body.get_string_from_utf8())
-		var json = test_json_conv.get_data()
-		var response = json.result
-		if "message" in response.keys() and response.message == "Forbidden":
-			SWLogger.error("You are not authorized to call the SilentWolf API - check your API key configuration: https://silentwolf.com/leaderboard")
+		var json_body = JSON.parse_string(body.get_string_from_utf8())
+		var sw_result: Dictionary = SilentWolf.build_result(json_body)
+		if json_body.success:
+			SWLogger.info("SilentWolf get scores by player success, found " + str(json_body.top_scores.size()) + " scores.")
+			player_scores = json_body.top_scores
+			SWLogger.debug("Scores for " + json_body.player_name +  ": " + str(player_scores))
+			var ld_name = json_body.ld_name
+			var ld_config = json_body.ld_config
+			var player_name = json_body.player_name
+			sw_result["scores"] = player_scores
 		else:
-			SWLogger.info("SilentWolf find score position success.")
-			position = int(response.position)
-			emit_signal("sw_position_received", position)
-			emit_signal("position_received", position)
+			SWLogger.error("SilentWolf get scores by player failure: " + str(json_body.error))
+		sw_get_player_scores_complete.emit(sw_result)	
 
 
-func _on_ScoresAround_request_completed(result, response_code, headers, body):
-	SWLogger.info("ScoresAround request completed")
-	var status_check = CommonErrors.check_status_code(response_code)
+func get_top_score_by_player(player_name: String, maximum: int=10, ldboard_name: String="main", period_offset: int=0) -> Node:
+	if player_name == null:
+		SWLogger.error("Error in SilentWolf.Scores.get_top_score_by_player: provided player_name is null")
+	else:
+		var prepared_http_req = SilentWolf.prepare_http_request()
+		TopScoreByPlayer = prepared_http_req.request
+		wrTopScoreByPlayer = prepared_http_req.weakref
+		TopScoreByPlayer.request_completed.connect(_on_GetTopScoreByPlayer_request_completed)
+		SWLogger.info("Calling SilentWolf backend to get top score for player: " + str(player_name))
+		# resetting the latest_number value in case the first requests times out, we need to request the same amount of top scores in the retry
+		latest_max = maximum
+		var request_url = "https://api.silentwolf.com/get_top_score_by_player/" + str(SilentWolf.config.game_id) + "?max=" + str(maximum)  + "&ldboard_name=" + str(ldboard_name.uri_encode()) + "&player_name=" + str(player_name.uri_encode()) + "&period_offset=" + str(period_offset)
+		SilentWolf.send_get_request(TopScoreByPlayer, request_url)
+	return self
+
+
+func _on_GetTopScoreByPlayer_request_completed(result, response_code, headers, body) -> void:
+	var status_check = SWUtils.check_http_response(response_code, headers, body)
+	SilentWolf.free_request(wrTopScoreByPlayer, TopScoreByPlayer)
+	
+	if status_check:
+		var json_body = JSON.parse_string(body.get_string_from_utf8())
+		var sw_result: Dictionary = SilentWolf.build_result(json_body)
+		if json_body.success:
+			SWLogger.info("SilentWolf get top score by player success, found top score? " + str(!json_body.top_score.empty()))
+			player_top_score = json_body.top_score
+			SWLogger.debug("Top score for " + json_body.player_name +  ": " + str(player_top_score))
+			var ld_name = json_body.ld_name
+			var ld_config = json_body.ld_config
+			var player_name = json_body.player_name
+			sw_result["top_score"] = player_top_score
+		else:
+			SWLogger.error("SilentWolf get top score by player failure: " + str(json_body.error))
+		sw_top_player_score_complete.emit(sw_result)	
+
+
+# The score attribute could be either a score_value (int) or score_id (Sstring)
+func get_score_position(score, ldboard_name: String="main") -> Node:
+	var score_id = null
+	var score_value = null
+	print("score: " + str(score))
+	if UUID.is_uuid(str(score)):
+		score_id = score 
+	else:
+		score_value = score
+	var prepared_http_req = SilentWolf.prepare_http_request()
+	ScorePosition = prepared_http_req.request
+	wrScorePosition = prepared_http_req.weakref
+	ScorePosition.request_completed.connect(_on_GetScorePosition_request_completed)
+	SWLogger.info("Calling SilentWolf to get score position")
+	var payload = { "game_id": SilentWolf.config.game_id, "ldboard_name": ldboard_name }
+	if score_id:
+		payload["score_id"] = score_id
+	if score_value:
+		payload["score_value"] = score_value
+	var request_url = "https://api.silentwolf.com/get_score_position"
+	SilentWolf.send_post_request(ScorePosition, request_url, payload)
+	return self
+
+
+func _on_GetScorePosition_request_completed(result, response_code, headers, body) -> void:
+	var status_check = SWUtils.check_http_response(response_code, headers, body)
+	SilentWolf.free_request(wrScorePosition, ScorePosition)
+	
+	if status_check:
+		var json_body = JSON.parse_string(body.get_string_from_utf8())
+		var sw_result: Dictionary = SilentWolf.build_result(json_body)
+		if json_body.success:
+			SWLogger.info("SilentWolf get score position success: " + str(json_body.position))
+			sw_result["position"] =  int(json_body.position)
+		else:
+			SWLogger.error("SilentWolf get score position failure: " + str(json_body.error))
+		sw_get_position_complete.emit(sw_result)
+
+
+# The score attribute couldd be either a score_value (int) or score_id (Sstring)
+func get_scores_around(score, scores_to_fetch=3, ldboard_name: String="main") -> Node:
+	var score_id = null
+	var score_value = null
+	print("score: " + str(score))
+	if UUID.is_uuid(str(score)):
+		score_id = score 
+	else:
+		score_value = score
+	var prepared_http_req = SilentWolf.prepare_http_request()
+	ScoresAround = prepared_http_req.request
+	wrScoresAround = prepared_http_req.weakref
+	
+	SWLogger.info("Calling SilentWolf backend to scores above and below a certain score...")
+	# resetting the latest_number value in case the first requests times out, we need to request the same amount of top scores in the retry
+	#latest_max = maximum
+	var request_url = "https://api.silentwolf.com/get_scores_around/" + str(SilentWolf.config.game_id) + "?scores_to_fetch=" + str(scores_to_fetch)  + "&ldboard_name=" + str(ldboard_name) + "&score_id=" + str(score_id) + "&score_value=" + str(score_value)
+	SilentWolf.send_get_request(ScoresAround, request_url)
+	return self
+
+
+func _on_ScoresAround_request_completed(result, response_code, headers, body) -> void:
+	var status_check = SWUtils.check_http_response(response_code, headers, body)
 	
 	SilentWolf.free_request(wrScoresAround, ScoresAround)
-	SWLogger.debug("response headers: " + str(response_code))
-	SWLogger.debug("response headers: " + str(headers))
-	SWLogger.debug("response body: " + str(body.get_string_from_utf8()))
 	
 	if status_check:
-		var test_json_conv = JSON.new()
-		test_json_conv.parse(body.get_string_from_utf8())
-		var json = test_json_conv.get_data()
-		var response = json.result
-		if "message" in response.keys() and response.message == "Forbidden":
-			SWLogger.error("You are not authorized to call the SilentWolf API - check your API key configuration: https://silentwolf.com/leaderboard")
+		var json_body = JSON.parse_string(body.get_string_from_utf8())
+		var sw_result: Dictionary = SilentWolf.build_result(json_body)
+		if json_body.success:
+			SWLogger.info("SilentWolf get scores around success.")
+			sw_result["scores_above"] = json_body.scores_above
+			sw_result["scores_below"] = json_body.scores_below
+			if "score_position" in json_body:
+				sw_result["position"] = json_body.score_position
 		else:
-			SWLogger.info("SilentWolf get scores around success")
-			if "scores_above" in response:
-				scores_above = response.scores_above
-				scores_below = response.scores_below
-				var ld_name = response.ld_name
-				#print("ld_name: " + str(ld_name))
-				var ld_config = response.ld_config
-				#print("ld_config: " + str(ld_config))
-				ldboard_config[ld_name] = ld_config
-				if "score_position" in response:
-					position = response.score_position
-				
-				emit_signal("sw_scores_around_received", scores_above, scores_below, position)
-			
-			
-func _on_WipeLeaderboard_request_completed(result, response_code, headers, body):
-	SWLogger.info("WipeLeaderboard request completed")
-	var status_check = CommonErrors.check_status_code(response_code)
-	#WipeLeaderboard.queue_free()
+			SWLogger.error("SilentWolf get scores around failure: " + str(json_body.error))
+		sw_get_scores_around_complete.emit(sw_result)
+
+
+
+func delete_score(score_id: String, ldboard_name: String='main') -> Node:
+	var prepared_http_req = SilentWolf.prepare_http_request()
+	DeleteScore = prepared_http_req.request
+	wrDeleteScore = prepared_http_req.weakref
+	DeleteScore.request_completed.connect(_on_DeleteScore_request_completed)
+	SWLogger.info("Calling SilentWolf to delete a score")
+	var request_url = "https://api.silentwolf.com/delete_score?game_id=" + str(SilentWolf.config.game_id) + "&ldboard_name=" + str(ldboard_name) + "&score_id=" + str(score_id)
+	SilentWolf.send_get_request(DeleteScore, request_url)
+	return self
+
+
+func _on_DeleteScore_request_completed(result, response_code, headers, body) -> void:
+	var status_check = SWUtils.check_http_response(response_code, headers, body)
+	SilentWolf.free_request(wrDeleteScore, DeleteScore)
+	
+	if status_check:
+		var json_body = JSON.parse_string(body.get_string_from_utf8())
+		var sw_result: Dictionary = SilentWolf.build_result(json_body)
+		if json_body.success:
+			SWLogger.info("SilentWolf delete score success")
+		else:
+			SWLogger.error("SilentWolf delete score failure: " + str(json_body.error))
+		sw_delete_score_complete.emit(sw_result)
+
+
+# Deletes all your scores for your game
+# Scores are permanently deleted, no going back!
+func wipe_leaderboard(ldboard_name: String='main') -> Node:
+	var prepared_http_req = SilentWolf.prepare_http_request()
+	WipeLeaderboard = prepared_http_req.request
+	wrWipeLeaderboard = prepared_http_req.weakref
+	WipeLeaderboard.request_completed.connect(_on_WipeLeaderboard_request_completed)
+	SWLogger.info("Calling SilentWolf backend to wipe leaderboard...")
+	var payload = { "game_id": SilentWolf.config.game_id, "ldboard_name": ldboard_name }
+	var request_url = "https://api.silentwolf.com/wipe_leaderboard"
+	SilentWolf.send_post_request(WipeLeaderboard, request_url, payload)
+	return self
+
+
+func _on_WipeLeaderboard_request_completed(result, response_code, headers, body) -> void:
+	var status_check = SWUtils.check_http_response(response_code, headers, body)
 	SilentWolf.free_request(wrWipeLeaderboard, WipeLeaderboard)
-	SWLogger.debug("response headers: " + str(response_code))
-	SWLogger.debug("response headers: " + str(headers))
-	SWLogger.debug("response body: " + str(body.get_string_from_utf8()))
 	
 	if status_check:
-		var test_json_conv = JSON.new()
-		test_json_conv.parse(body.get_string_from_utf8())
-		var json = test_json_conv.get_data()
-		var response = json.result
-		if "message" in response.keys() and response.message == "Forbidden":
-			SWLogger.error("You are not authorized to call the SilentWolf API - check your API key configuration: https://silentwolf.com/leaderboard")
-		else:
+		var json_body = JSON.parse_string(body.get_string_from_utf8())
+		var sw_result: Dictionary = SilentWolf.build_result(json_body)
+		if json_body.success:
 			SWLogger.info("SilentWolf wipe leaderboard success.")
-			emit_signal("sw_leaderboard_wiped")
+		else:
+			SWLogger.error("SilentWolf wipe leaderboard failure: " + str(json_body.error))
+		sw_wipe_leaderboard_complete.emit(sw_result)
 
 
-func send_get_request(http_node, request_url):
-	var headers = ["x-api-key: " + SilentWolf.config.api_key, "x-sw-plugin-version: " + SilentWolf.version]
-	if !http_node.is_inside_tree():
-		await get_tree().create_timer(0.01).timeout
-	SWLogger.debug("Method: GET")
-	SWLogger.debug("request_url: " + str(request_url))
-	SWLogger.debug("headers: " + str(headers))
-	http_node.request(request_url, headers) 
+func add_to_local_scores(game_result: Dictionary, ld_name: String="main") -> void:
+	var local_score = { "score_id": game_result.score_id, "game_id" : game_result.game_id, "player_name": game_result.player_name, "score": game_result.score }
+	local_scores.append(local_score)
+	SWLogger.debug("local scores: " + str(local_scores))
 
 
-func send_post_request(http_node, request_url, payload):
-	var headers = [
-		"Content-Type: application/json", 
-		"x-api-key: " + SilentWolf.config.api_key, 
-		"x-sw-plugin-version: " + SilentWolf.version
-	]
-	if "post_new_score" in request_url:
-		SWLogger.info("We're doing a post score")
-		var player_name = payload["player_name"]
-		var player_score = payload["score"]
-		var timestamp = Time.get_ticks_msec()
-		var to_be_hashed = [player_name, player_score, timestamp]
-		SWLogger.debug("send_post_request to_be_hashed: " + str(to_be_hashed))
-		var hashed = SWHashing.hash_values(to_be_hashed)
-		SWLogger.debug("send_post_request hashed: " + str(hashed))
-		headers.append("x-sw-act-tmst: " + str(timestamp))
-		headers.append("x-sw-act-dig: " + hashed)
-	var use_ssl = true
-	if !http_node.is_inside_tree():
-		await get_tree().create_timer(0.01).timeout
-	var query = JSON.stringify(payload)
-	SWLogger.info("Method: POST")
-	SWLogger.info("request_url: " + str(request_url))
-	SWLogger.info("headers: " + str(headers))
-	SWLogger.info("query: " + str(query))
-	http_node.request(request_url, headers, use_ssl, HTTPClient.METHOD_POST, query)
+func translate_score_fields_in_array(scores: Array) -> Array:
+	var translated_scores = []
+	for score in scores:
+		var new_score = translate_score_fields(score)
+		translated_scores.append(new_score)
+	return translated_scores
+
+
+func translate_score_fields(score: Dictionary) -> Dictionary:
+	var translated_score = {}
+	translated_score["score_id"] = score["sid"]
+	translated_score["score"] = score["s"]
+	translated_score["player_name"] = score["pn"]
+	if "md" in score:
+		translated_score["metadata"] = score["md"]
+	return translated_score

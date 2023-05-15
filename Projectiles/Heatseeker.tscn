@@ -1,0 +1,38 @@
+[gd_scene load_steps=6 format=3 uid="uid://dsmbvwqvvhhyv"]
+
+[ext_resource type="Script" path="res://Projectiles/heatseeker.gd" id="1_3cbir"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_1jjg0"]
+radius = 0.05
+
+[sub_resource type="SphereMesh" id="SphereMesh_hhao5"]
+radius = 0.05
+height = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a43oc"]
+emission_enabled = true
+emission = Color(1, 1, 0, 1)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_6bh68"]
+radius = 80.0
+
+[node name="Heatseeker" type="CharacterBody3D" groups=["eor_clear"]]
+collision_layer = 16
+collision_mask = 40
+script = ExtResource("1_3cbir")
+HomingAreaPath = NodePath("Area3D")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_1jjg0")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_hhao5")
+skeleton = NodePath("../CollisionShape3D")
+surface_material_override/0 = SubResource("StandardMaterial3D_a43oc")
+
+[node name="Area3D" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("SphereShape3D_6bh68")

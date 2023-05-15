@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://b22gbibvqjh8x"]
+[gd_scene load_steps=15 format=3 uid="uid://b22gbibvqjh8x"]
 
 [ext_resource type="Script" path="res://PlayerCharacters/controller.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://b5u1okuuwqx2a" path="res://PlayerCharacters/Over.png" id="2"]
@@ -21,6 +21,26 @@ albedo_color = Color(0.372549, 0.196078, 0.788235, 1)
 left_to_right = 1.0
 size = Vector3(0.2, 0.5, 0.4)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_actys"]
+transparency = 1
+albedo_color = Color(1, 0, 0, 0.392157)
+emission_enabled = true
+emission = Color(0.929412, 0.964706, 0.27451, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_buowr"]
+material = SubResource("StandardMaterial3D_actys")
+inner_radius = 0.4
+outer_radius = 0.5
+
+[sub_resource type="Curve" id="Curve_ei1hd"]
+max_value = 10.0
+_data = [Vector2(0.072327, 0), 0.0, 0.0, 0, 0, Vector2(1, 10), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_8irt0"]
+height = 0.75
+radius = 5.0
+
 [node name="Player" type="CharacterBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 collision_layer = 4
@@ -30,6 +50,8 @@ PlayerPath = NodePath(".")
 CameraPath = NodePath("Camera3D")
 MeshInstancePath = NodePath("PlayerModel")
 BulletLocationPath = NodePath("PlayerModel/BulletLocation")
+ExplosionEffectPath = NodePath("Explosion Radius/Explosion Effect")
+ExplosionRadiusPath = NodePath("Explosion Radius")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("1")
@@ -57,12 +79,34 @@ script = ExtResource("2_6ycaj")
 PlayerPath = NodePath("..")
 
 [node name="HealthBar" type="TextureProgressBar" parent="."]
-anchor_top = 1.0
+anchors_preset = -1
+anchor_top = 0.964
+anchor_right = 0.267
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -40.0
-offset_right = 300.0
-offset_bottom = -20.0
+offset_left = 28.0
+offset_top = -53.6721
+offset_right = 0.415985
+offset_bottom = -47.0
+grow_horizontal = 2
+grow_vertical = 2
+nine_patch_stretch = true
 texture_under = ExtResource("4")
 texture_over = ExtResource("2")
 texture_progress = ExtResource("3")
+
+[node name="Explosion Radius" type="Area3D" parent="."]
+collision_layer = 64
+collision_mask = 8
+
+[node name="Explosion Effect" type="CPUParticles3D" parent="Explosion Radius"]
+emitting = false
+amount = 1
+lifetime = 0.15
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("TorusMesh_buowr")
+gravity = Vector3(0, 0, 0)
+scale_amount_curve = SubResource("Curve_ei1hd")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Explosion Radius"]
+shape = SubResource("CylinderShape3D_8irt0")

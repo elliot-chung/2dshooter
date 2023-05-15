@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://bqhf7j1uw4c5p"]
+
+[ext_resource type="Texture2D" uid="uid://bq3j4ysdkuki7" path="res://UIAssets/Ellipse 1.png" id="1_2u2er"]
+[ext_resource type="Script" path="res://UIAssets/loading_wheel.gd" id="2_ca3gv"]
+
+[node name="LoadingWheel" type="TextureProgressBar"]
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -25.0
+offset_top = 150.0
+offset_right = 15.0
+offset_bottom = 190.0
+value = 100.0
+fill_mode = 4
+texture_progress = ExtResource("1_2u2er")
+radial_fill_degrees = 90.0
+script = ExtResource("2_ca3gv")

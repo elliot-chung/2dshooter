@@ -6,6 +6,7 @@
 bounce = 1.0
 
 [sub_resource type="BoxMesh" id="3"]
+size = Vector3(600, 150, 150)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_srhqj"]
 albedo_color = Color(0.658824, 0.333333, 1, 1)
@@ -16,6 +17,7 @@ normal_texture = ExtResource("1_fdibc")
 uv1_scale = Vector3(32, 6, 6)
 
 [sub_resource type="BoxShape3D" id="4"]
+size = Vector3(600, 150, 150)
 
 [node name="StaticBody3D" type="StaticBody3D"]
 collision_layer = 2

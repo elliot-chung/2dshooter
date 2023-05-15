@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://ceecrn3rpku7p"]
+
+[ext_resource type="AudioStream" uid="uid://cqh7bsxirkkml" path="res://sound effects/dash.wav" id="1_sl0u2"]
+[ext_resource type="Script" path="res://sound effects/soundplayer.gd" id="2_mfm8k"]
+
+[node name="soundplayer" type="AudioStreamPlayer3D"]
+stream = ExtResource("1_sl0u2")
+autoplay = true
+script = ExtResource("2_mfm8k")

@@ -5,17 +5,21 @@ const SWLogger = preload("res://addons/silent_wolf/utils/SWLogger.gd")
 
 var ld_names = ["Weekly", "Monthly", "main"]
 
+var scores = []
+
 func _ready():
-	SilentWolf.Scores.connect("sw_scores_received",Callable(self,"_on_scores_received"))
+	SilentWolf.Scores.sw_get_scores_complete.connect(_on_scores_received)
+	
 	#var scores = SilentWolf.Scores.scores
 	add_loading_scores_message()
-	SilentWolf.Scores.get_high_scores(10, "main")
+	var sw_result = SilentWolf.Scores.get_scores(10, "main")
+	scores = sw_result.scores
 	# the other leaderboard scores will be called once the main call in finished 
 	# (see signal connected above and _on_scores_received function below)
 	# when all the scores are loaded the leaderboard scene can be opened
 
 
-func render_boards(leaderboards):
+func render_boards(leaderboards: Array) -> void:
 	#print("leaderboards: " + str(leaderboards))
 	var board_number = 0
 	for board in leaderboards:
@@ -28,7 +32,7 @@ func render_boards(leaderboards):
 		board_number += 1
 
 
-func add_item(ld_name, player_name, score, list_index):
+func add_item(ld_name: String, player_name: String, score: String, list_index: int) -> void:
 	var item = ScoreItem.instantiate()
 	item.get_node("PlayerName").text = str(list_index) + str(". ") + player_name
 	item.get_node("Score").text = score
@@ -36,37 +40,39 @@ func add_item(ld_name, player_name, score, list_index):
 	get_node("MainContainer/Boards/" + ld_name + "/HighScores/ScoreItemContainer").add_child(item)
 
 
-func add_no_scores_message():
+func add_no_scores_message() -> void:
 	var item = $"MainContainer/MessageContainer/TextMessage"
 	item.text = "No scores yet!"
 	$"MainContainer/MessageContainer".show()
 	item.offset_top = 135
 
 
-func add_loading_scores_message():
+func add_loading_scores_message() -> void:
 	var item = $"MainContainer/MessageContainer/TextMessage"
 	item.text = "Loading scores..."
 	$"MainContainer/MessageContainer".show()
 	item.offset_top = 135
 
 
-func hide_message():
+func hide_message() -> void:
 	$"MainContainer/MessageContainer".hide()
 
 
-func _on_CloseButton_pressed():
+func _on_CloseButton_pressed() -> void:
 	var scene_name = SilentWolf.scores_config.open_scene_on_close
 	SWLogger.info("Closing SilentWolf leaderboard, switching to scene: " + str(scene_name))
-	#global.reset()
 	get_tree().change_scene_to_file(scene_name)
 
 
-func _on_scores_received(ld_name, scores):
+func _on_scores_received(get_scores_result: Dictionary) -> void:
+	var ld_name: String = get_scores_result.ld_name
+	var scores: Array = get_scores_result.scores
+	
 	if ld_name == "main":
-		SilentWolf.Scores.get_high_scores(10, "Weekly")
-		#SilentWolf.Scores.get_high_scores(10, "Weekly", -1)
+		SilentWolf.Scores.get_scores(10, "Weekly")
+		#SilentWolf.Scores.get_scores(10, "Weekly", -1)
 	elif ld_name == "Weekly":
-		SilentWolf.Scores.get_high_scores(10, "Monthly")
+		SilentWolf.Scores.get_scores(10, "Monthly")
 	else:
 		#print("SilentWolf.Scores.leaderboards: " + str(SilentWolf.Scores.leaderboards))
 		var ld_scores = []

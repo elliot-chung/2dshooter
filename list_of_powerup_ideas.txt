@@ -127,8 +127,6 @@ Effect:
 name: Rhythmic
 Effect:
 	Increase base_fire_rate by +1
-	Decrease damage_scaling -50% for each stack
-	If damage_scaling falls below -50%, logarithmic scaling. 
 
 name: Bouncy
 Effect:
@@ -146,18 +144,11 @@ Effect:
 	-10s per stack
 	No effects after 4 stacks.
 
-name: Instantaneous
-Effect:
-	Replace dash with a blink to cursor.
-	Increase base_dash_cooldown by +3 on first stack.
-	Decrease base_dash_cooldown by -1 on each additional stack.
-	No effect after 4 stacks. 
 
 name: Persistent
 Effect:
 	Projectile bounces +1 times to another enemy triggering all 
 	effects on impact.
-	No effect after 4 stacks.
 
 name: Undying
 Effect:

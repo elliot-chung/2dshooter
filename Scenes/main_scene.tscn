@@ -1,0 +1,150 @@
+[gd_scene load_steps=10 format=3 uid="uid://g8wo6u6cxbpk"]
+
+[ext_resource type="Script" path="res://Scenes/main_scene.gd" id="1_7grka"]
+[ext_resource type="PackedScene" uid="uid://b6bfk70se0qnm" path="res://EnvironmentObjects/Floor.tscn" id="2_my0ro"]
+[ext_resource type="PackedScene" uid="uid://dw7t5ce5ijcga" path="res://EnvironmentObjects/Static cube.tscn" id="3_340yj"]
+[ext_resource type="PackedScene" uid="uid://b22gbibvqjh8x" path="res://PlayerCharacters/BasePlayer.tscn" id="4_dqjku"]
+[ext_resource type="PackedScene" uid="uid://c8mrmewk87cxj" path="res://Powerup Inventory/Powerup Inventory.tscn" id="5_c03fl"]
+[ext_resource type="FontFile" uid="uid://5yg3f0r12k0l" path="res://UIAssets/roundfont.ttf" id="6_f4pgn"]
+[ext_resource type="Script" path="res://Scenes/pause_screen.gd" id="7_qaxoq"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_0cl4n"]
+font = ExtResource("6_f4pgn")
+font_size = 64
+
+[sub_resource type="LabelSettings" id="LabelSettings_n127i"]
+font = ExtResource("6_f4pgn")
+font_size = 48
+
+[node name="TestScene" type="Node3D"]
+script = ExtResource("1_7grka")
+PlayerPath = NodePath("Player")
+InventoryPath = NodePath("Powerup Inventory")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.412582, 0.762997, -0.497607, -0.4574, 0.298881, 0.83753, 0.787758, 0.573154, 0.225682, 0, 265.515, 0)
+light_energy = 1.914
+
+[node name="Player" parent="." instance=ExtResource("4_dqjku")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+
+[node name="Powerup Inventory" parent="." instance=ExtResource("5_c03fl")]
+size_flags_vertical = 0
+mouse_default_cursor_shape = 3
+
+[node name="RoundCount" type="Label" parent="."]
+anchors_preset = -1
+anchor_right = 0.017
+anchor_bottom = 0.027
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 80.416
+offset_bottom = 52.504
+grow_horizontal = 2
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_0cl4n")
+
+[node name="Floor" parent="." instance=ExtResource("2_my0ro")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="Static cube2" parent="." instance=ExtResource("3_340yj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 74, -225)
+
+[node name="Static cube3" parent="." instance=ExtResource("3_340yj")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 225, 74, 0)
+
+[node name="Static cube4" parent="." instance=ExtResource("3_340yj")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -225, 74, 0)
+
+[node name="Static cube5" parent="." instance=ExtResource("3_340yj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 74, 225)
+
+[node name="PauseScreen" type="Control" parent="."]
+process_mode = 3
+visible = false
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("7_qaxoq")
+
+[node name="Label" type="Label" parent="PauseScreen"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.5
+offset_top = -168.0
+offset_right = 75.5
+offset_bottom = -120.0
+grow_horizontal = 2
+text = "PAUSED"
+label_settings = SubResource("LabelSettings_n127i")
+
+[node name="ExitButton" type="Button" parent="PauseScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -53.5
+offset_top = 102.5
+offset_right = 56.5
+offset_bottom = 162.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="PauseScreen/ExitButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.5
+offset_top = -24.0
+offset_right = 50.5
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "EXIT"
+label_settings = SubResource("LabelSettings_n127i")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContinueButton" type="Button" parent="PauseScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -40.0
+offset_right = 150.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="PauseScreen/ContinueButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -92.0
+offset_top = -24.0
+offset_right = 92.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "CONTINUE"
+label_settings = SubResource("LabelSettings_n127i")

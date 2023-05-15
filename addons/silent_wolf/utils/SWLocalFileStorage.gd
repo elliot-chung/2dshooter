@@ -6,33 +6,40 @@ const SWLogger = preload("res://addons/silent_wolf/utils/SWLogger.gd")
 # example path: "user://swsession.save"
 
 # store lookup (not logged in player name) and validator in local file
-static func save_data(path: String, data: Dictionary, debug_message: String='Saving data to file in local storage: ') -> void:
-	var local_file = FileAccess.open(path, FileAccess.WRITE)
+static func save_data(path: String, data: Dictionary, debug_message: String='Saving data to file in local storage: ') -> bool:
+	var save_success = false
+	var file = FileAccess.open(path, FileAccess.WRITE)
+	file.store_string(str(data))
+	save_success = true
 	SWLogger.debug(debug_message + str(data))
-	local_file.store_line(JSON.new().stringify(data))
-	local_file.close()
+	return save_success
 
 
-static func remove_data(path: String, debug_message: String='Removing data from file in local storage: ') -> void:
-	var local_file = FileAccess.open(path, FileAccess.WRITE)
-	var data = {}
-	SWLogger.debug(debug_message + str(data))
-	local_file.store_line(JSON.new().stringify(data))
-	local_file.close()
+static func remove_data(path: String, debug_message: String='Removing data from file in local storage: ') -> bool:
+	var delete_success = false
+	if FileAccess.file_exists(path):
+		var file = FileAccess.open(path, FileAccess.WRITE)
+		var data = {}
+		file.store_var(data)
+		delete_success = true
+	SWLogger.debug(debug_message)
+	return delete_success
 
+
+static func does_file_exist(path: String) -> bool:
+	return FileAccess.file_exists(path)
 
 
 static func get_data(path: String) -> Dictionary:
-	var return_data = {}
+	var content = {}
 	if FileAccess.file_exists(path):
-		var local_file = FileAccess.open(path, FileAccess.WRITE)
-		var test_json_conv = JSON.new()
-		test_json_conv.parse(local_file.get_as_text())
-		var data = test_json_conv.get_data()
+		var file = FileAccess.open(path, FileAccess.READ)
+		var text_content = file.get_as_text()
+		var data = JSON.parse_string(text_content)
 		if typeof(data) == TYPE_DICTIONARY:
-			return_data = data
+			content = data
 		else:
 			SWLogger.debug("Invalid data in local storage")
 	else:
 		SWLogger.debug("Could not find any data at: " + str(path))
-	return return_data
+	return content

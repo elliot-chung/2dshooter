@@ -1,6 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://usqve1cuymxo"]
+[gd_scene load_steps=7 format=3 uid="uid://ftooxe6dq807"]
 
-[ext_resource type="Script" path="res://Projectiles/Bullet.gd" id="1"]
+[ext_resource type="Script" path="res://Projectiles/bullet.gd" id="1_h0uc5"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_yajio"]
 radius = 0.1
@@ -20,12 +20,16 @@ emission_energy_multiplier = 0.5
 height = 0.05
 radius = 50.0
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_u6cgn"]
+radius = 2.0
+
 [node name="CharacterBody3D" type="CharacterBody3D"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
 collision_layer = 16
 collision_mask = 42
-script = ExtResource("1")
-AreaNodePath = NodePath("Area3D")
+script = ExtResource("1_h0uc5")
+AreaNodePath = NodePath("BounceArea")
+ExplosionRadiusPath = NodePath("Explosion Radius")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("SphereShape3D_yajio")
@@ -39,10 +43,17 @@ light_energy = 4.0
 light_specular = 2.0
 shadow_enabled = true
 
-[node name="Area3D" type="Area3D" parent="."]
+[node name="BounceArea" type="Area3D" parent="."]
 collision_layer = 0
-collision_mask = 40
+collision_mask = 8
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BounceArea"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
 shape = SubResource("CylinderShape3D_8u8b5")
+
+[node name="Explosion Radius" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Explosion Radius"]
+shape = SubResource("SphereShape3D_u6cgn")

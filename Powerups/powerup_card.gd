@@ -1,4 +1,3 @@
-extends Button
-
+extends TextureRect
 
 var rarity: String

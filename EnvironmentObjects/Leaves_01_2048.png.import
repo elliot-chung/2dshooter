@@ -4,23 +4,22 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://d3fg7rxa3ugin"
 path.s3tc="res://.godot/imported/Leaves_01_2048.png-e3be454f165f317286538275d387c1ce.s3tc.ctex"
-path.etc2="res://.godot/imported/Leaves_01_2048.png-e3be454f165f317286538275d387c1ce.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc", "etc2"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://EnvironmentObjects/Leaves_01_2048.png"
-dest_files=["res://.godot/imported/Leaves_01_2048.png-e3be454f165f317286538275d387c1ce.s3tc.ctex", "res://.godot/imported/Leaves_01_2048.png-e3be454f165f317286538275d387c1ce.etc2.ctex"]
+dest_files=["res://.godot/imported/Leaves_01_2048.png-e3be454f165f317286538275d387c1ce.s3tc.ctex"]
 
 [params]
 
 compress/mode=2
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1
-compress/bptc_ldr=0
 compress/normal_map=1
 compress/channel_pack=0
 mipmaps/generate=true

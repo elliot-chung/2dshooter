@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bh70c1orci7do"
+path="res://.godot/imported/enemy_hit.wav-188402d63b5f62bac455e9ea7e9ac583.sample"
+
+[deps]
+
+source_file="res://sound effects/enemy_hit.wav"
+dest_files=["res://.godot/imported/enemy_hit.wav-188402d63b5f62bac455e9ea7e9ac583.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=0

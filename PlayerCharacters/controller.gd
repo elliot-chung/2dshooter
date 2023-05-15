@@ -3,16 +3,29 @@ extends CharacterBody3D
 signal player_died
 signal position_changed(position)
 
+const AUDIO_PLAYER := preload("res://sound effects/soundplayer.tscn")
+
 const BULLET := preload("res://Projectiles/Bullet.tscn")
+const BULLET_AUDIO := preload("res://sound effects/player_shoot.wav")
+const EXPLOSION_AUDIO := preload("res://sound effects/player_explode.wav")
+const DASH_AUDIO := preload("res://sound effects/dash.wav")
+const HIT_AUDIO := preload("res://sound effects/player_hit.wav")
+
 const BASE_DASH_COOLDOWN := 5.0
 const DASH_LENGTH := 0.05
 const DASH_SPEED := 4.0
 const INVINCIBILITY_TIME := 0.2
+const REGEN_TIME := 0.5
+const PAYBACK_COOLDOWN := 5.0
+const PAYBACK_KNOCKBACK_STRENGTH := 20.0
+const DOT_DAMAGE_RATE := 20.0
 
 @export var PlayerPath: NodePath = NodePath()
 @export var CameraPath: NodePath = NodePath()
 @export var MeshInstancePath: NodePath = NodePath()
 @export var BulletLocationPath: NodePath = NodePath()
+@export var ExplosionEffectPath: NodePath = NodePath()
+@export var ExplosionRadiusPath: NodePath = NodePath()
 
 # Configurable Variables
 @export var movement_speed: float = 3.0				# Movement Values
@@ -26,34 +39,41 @@ const INVINCIBILITY_TIME := 0.2
 @export var projectile_knockback: float = 1.0
 @export var max_wall_bounces: int = 0
 @export var max_enemy_bounces: int = 0
+@export var firing_cost: float = 0.0
+@export var heatseeker_count: int = 0
+@export var explosion_conversion: float = 0.0
 
 @export var dash_cooldown_scaling: float = 1.0		# Dash Values
 @export var max_dash_count: int = 1
-@export var blink_enabled: bool = false
 
 @export var base_health: float = 100.0 				# Health Values
 @export var health_scaling: float = 1.0
 @export var health_regen: float = 0.0
+@export var comeback_regen: float = 0.0
+@export var lifesteal: float = 0.0
 
 @export var damage_mitigation: float = 0.0			# Damage Mitigation Values
 @export var knockback_mitigation: float = 0.0
+@export var dot_conversion: float = 0.0
 
 @export var base_damage: float = 5.0 				# Damage Values
 @export var damage_scaling: float = 1.0
 @export var critical_chance: float = 0.0
-
-@export var undying_stacks: int = 0				# Extra Lives
+	
+@export var melee_payback_damage: float = 0.0   # Melee Payback Values
 
 # Nodes
 var Player: CharacterBody3D
 var PlayerCamera: Camera3D
 var PlayerMeshInstance: MeshInstance3D
 var BulletLocation: Node3D
+var ExplosionEffect: CPUParticles3D
+var ExplosionRadius: Area3D
 
 # Public Variables
-var max_speed := Vector3()# Target movement vector
-var movement := Vector3() # horizonal movement vector
-var speed := Vector3() # Actual movement vector
+var max_speed := Vector3()              # Target movement vector
+var movement := Vector3()               # Horizonal movement vector
+var speed := Vector3()                  # Actual movement vector
 var current_vertical_speed := Vector3() # Vertical movement vector
 var max_health := base_health * health_scaling
 var health := max_health
@@ -76,6 +96,9 @@ var _dash_speed := Vector3()
 var _dash_time := 0.0
 var _regen_timer := 0.0
 var _damage_timer := 0.0
+var _payback_timer := 0.0
+var _time_between_shots := 1.0/(fire_rate * fire_rate_scaling)
+var _queued_dot_damage := 0.0
 
 
 func refresh():
@@ -83,6 +106,11 @@ func refresh():
 	max_health = base_health * health_scaling
 	health = max_health * health_percentage
 	
+	dash_count = max_dash_count
+	_dash_timers.resize(max_dash_count)
+	_dash_timers.fill(0.0)
+	
+	_time_between_shots = 1.0/(fire_rate * fire_rate_scaling)
 
 func heal_damage(damage: float):
 	health += damage
@@ -90,22 +118,55 @@ func heal_damage(damage: float):
 		health = max_health
 		
 	$HealthBar.value = 100.0 * health / max_health
+
+func _dot_damage(delta: float):
+	if _queued_dot_damage == 0:
+		return
+	var damage := delta * DOT_DAMAGE_RATE
+	damage = min(_queued_dot_damage, damage)
 	
-func take_damage(damage: float, knockback: Vector3):
-	if _damage_timer != 0.0:
+	_queued_dot_damage -= damage
+	health -= damage
+
+func take_damage(damage: float, knockback: Vector3, melee: bool):
+	if _damage_timer != 0.0 || damage == 0:
 		return
 	_damage_timer = INVINCIBILITY_TIME
-	health -= damage * (1 - damage_mitigation)
-	speed += knockback * (1 - knockback_mitigation)
+	_regen_timer = REGEN_TIME
+	var mitigated_damage = damage * (1 - damage_mitigation)
+	_queued_dot_damage += dot_conversion * mitigated_damage
+	health -= (1 - dot_conversion) * mitigated_damage
+	
+	var player = AUDIO_PLAYER.instantiate()
+	player.stream = HIT_AUDIO
+	self.add_child(player)
+	
+	PlayerCamera.shake(5.0 * damage / max_health)
+	
+	if melee && melee_payback_damage > 0 && _payback_timer == 0.0: 
+		explode()
+		_payback_timer = PAYBACK_COOLDOWN
+	else:	 
+		speed += knockback * (1 - knockback_mitigation)
 	if health <= 0:
-		health = 0
-		undying_stacks -= 1
-		if undying_stacks < 0:
-			dead = true
-			emit_signal("player_died")
+		dead = true
+		emit_signal("player_died")
+
+			
 			
 	$HealthBar.value = 100.0 * health / max_health
+
+func explode():
+	var player = AUDIO_PLAYER.instantiate()
+	player.stream = EXPLOSION_AUDIO
+	self.add_child(player)
 	
+	ExplosionEffect.restart()
+	var enemies := ExplosionRadius.get_overlapping_bodies()
+	for enemy in enemies:
+		var knockback := (enemy.global_position - global_position).normalized() * PAYBACK_KNOCKBACK_STRENGTH
+		enemy.true_hit(melee_payback_damage, knockback, false)
+
 func _rotate_player():	
 	# Rotate Player Model _towards Cursor
 	PlayerMeshInstance.look_at(_collision_point,Vector3.UP)
@@ -137,15 +198,21 @@ func _poll_character_movement(delta):
 		direction += Vector3(1.0,0.0,0.0)
 		# print("right")
 	if (Input.is_action_just_pressed("dash")):
-		if dashing || dash_count <= 0:
+		if dashing || dash_count == 0:
 			return
-		elif blink_enabled:
-			pass
 		else:
-			_dash_timers[dash_count - 1] = BASE_DASH_COOLDOWN * dash_cooldown_scaling
+			for n in max_dash_count:
+				if _dash_timers[dash_count - n - 1] == 0:
+					_dash_timers[dash_count - n - 1] = BASE_DASH_COOLDOWN * dash_cooldown_scaling
+					break
+				else:
+					continue
 			_dash_speed = DASH_SPEED * max_speed
 			dashing = true
 			dash_count -= 1
+			var player = AUDIO_PLAYER.instantiate()
+			player.stream = DASH_AUDIO
+			self.add_child(player)
 	
 	direction.y = 0
 	max_speed = movement_speed * movement_speed_scaling * direction.normalized()
@@ -164,25 +231,50 @@ func _poll_character_movement(delta):
 func handle_stat_change(stat_name: String, value):
 	set(stat_name, value)
 
-func _handle_dash_cooldowns(delta: float):
+func handle_enemy_health_change(value: float, change: float):
+	if change < 0: # Enemy damaged
+		heal_damage(-1 * change * lifesteal)
+	else: # Enemy healing
+		pass
+
+func _handle_cooldowns(delta):
+	# Invincibility 
+	if _damage_timer > 0.0:
+		_damage_timer -= delta
+	else:
+		_damage_timer = 0.0
+		
+	# Payback
+	if _payback_timer > 0.0:
+		_payback_timer -= delta
+	else:
+		_payback_timer = 0.0
+		
+	# Dash
 	if dashing && _dash_time < DASH_LENGTH: 
 		_dash_time += delta
 	else:
 		_dash_time = 0.0
 		dashing = false
-
 	if dash_count < max_dash_count:
-		for i in range(dash_count, max_dash_count):
+		for i in max_dash_count:
+			if _dash_timers[i] == 0.0:
+				continue
 			_dash_timers[i] -= delta
 			if _dash_timers[i] < 0.0:
 				_dash_timers[i] = 0.0
 				dash_count += 1
-				
-func _handle_invincibility(delta: float):
-	if _damage_timer > 0.0:
-		_damage_timer -= delta
+	
+	# Comeback Regen			
+	_regen_timer -= delta
+	if _regen_timer < 0.0:
+		_regen_timer = 0.0
+	
+	# Firing
+	if _time_to_refire > 0.0:
+		_time_to_refire -= delta
 	else:
-		_damage_timer = 0.0
+		_time_to_refire = 0.0
 
 func _calculate_cursor_location():
 	var cursorPos := get_viewport().get_mouse_position()
@@ -196,59 +288,69 @@ func _calculate_cursor_location():
 		_collision_point = result["position"]
 	# Move Cursor _to Collision Point
 
+func _health_regen(delta):
+	var real_regen = comeback_regen if _regen_timer > 0.0 else health_regen
+	heal_damage(real_regen * delta)
+	
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED)
 	Player = get_node(PlayerPath)
 	PlayerCamera = get_node(CameraPath)
 	PlayerMeshInstance = get_node(MeshInstancePath)
 	BulletLocation = get_node(BulletLocationPath)
+	ExplosionEffect = get_node(ExplosionEffectPath)
+	ExplosionRadius = get_node(ExplosionRadiusPath)
 	
 	$HealthBar.value = 100.0 * health / max_health
 	
 	_from = PlayerCamera.project_ray_origin(Vector2(0,0))
 	_dash_timers.resize(max_dash_count)
-	var zero_float := 0.0
-	_dash_timers.fill(zero_float)
+	_dash_timers.fill(0.0)
+	dash_count = max_dash_count
+	
+	_time_between_shots = 1.0/(fire_rate * fire_rate_scaling)
 
 func _input(event):
 	#Rotate Mesh with Mouse Motion
 	if event is InputEventMouseMotion:
 		_rotate_player()
 
-func _process(delta):
-	if dead:
+func _handle_firing():
+	if (!Input.is_action_pressed("shoot")) || _time_to_refire > 0.0:
 		return
 	
-	# Health Regen
-	heal_damage(health_regen * delta)
+	_time_to_refire = _time_between_shots
 	
-	# Shoot
-	_time_to_refire -= delta
-	if _time_to_refire < 0.0:
-		_time_to_refire = 0.0
-	if (Input.is_action_pressed("shoot")):
-		if _time_to_refire > 0.0:
-			return
-		_time_to_refire = 1.0/(fire_rate * fire_rate_scaling)
+	take_damage(firing_cost, Vector3.ZERO, false)
 
-		var bullet := BULLET.instantiate()
-		bullet.transform = BulletLocation.get_global_transform()
-		bullet.max_wall_bounces = max_wall_bounces
-		bullet.max_enemy_bounces = max_enemy_bounces
-		bullet.projectile_speed = projectile_speed * projectile_speed_scaling
-		bullet.set_scale(Vector3(projectile_size, projectile_size, projectile_size))
-		bullet.direction = _facing_direction
-		bullet.player_base_damage = base_damage
-		bullet.player_damage_scaling = damage_scaling
-		bullet.player_knockback = projectile_knockback
-		bullet.critical_chance = critical_chance
-		get_node("/root/").add_child(bullet)
+	var bullet := BULLET.instantiate()
+	bullet.transform = BulletLocation.get_global_transform()
+	bullet.max_wall_bounces = max_wall_bounces
+	bullet.max_enemy_bounces = max_enemy_bounces
+	bullet.projectile_speed = projectile_speed * projectile_speed_scaling
+	bullet.set_scale(Vector3(projectile_size, projectile_size, projectile_size))
+	bullet.direction = _facing_direction
+	bullet.player_base_damage = base_damage
+	bullet.player_damage_scaling = damage_scaling
+	bullet.player_knockback = projectile_knockback
+	bullet.critical_chance = critical_chance
+	bullet.homing_spawn = heatseeker_count
+	bullet.explosion_conversion = explosion_conversion
+	get_node("/root/").add_child(bullet)
+	
+	var player = AUDIO_PLAYER.instantiate()
+	player.stream = BULLET_AUDIO
+	self.add_child(player)
 
 func _physics_process(delta):
-	_poll_character_movement(delta)
 	_calculate_cursor_location()
-	_handle_dash_cooldowns(delta)
-	_handle_invincibility(delta)
+	_poll_character_movement(delta)
+	_handle_cooldowns(delta)
+	
+	_health_regen(delta)
+	_dot_damage(delta)
+	
+	_handle_firing()
 	
 	if !dead:	
 		Player.set_velocity(movement)

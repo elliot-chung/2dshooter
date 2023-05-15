@@ -21,38 +21,54 @@ grow_vertical = 2
 script = ExtResource("1_7lb78")
 
 [node name="MenuButtons" type="Control" parent="."]
-anchors_preset = 0
-offset_left = 150.0
-offset_top = 150.0
-offset_right = 350.0
-offset_bottom = 270.0
+layout_mode = 1
+anchor_left = 0.13
+anchor_top = 0.231
+anchor_right = 0.13
+anchor_bottom = 0.231
+offset_left = 0.23999
+offset_top = 0.311996
+offset_right = 200.24
+offset_bottom = 120.312
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="PlayButton" type="Button" parent="MenuButtons"]
 layout_mode = 1
-offset_right = 200.0
-offset_bottom = 50.0
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.417
+offset_bottom = -0.0400047
 mouse_default_cursor_shape = 2
 
 [node name="Label" type="Label" parent="MenuButtons/PlayButton"]
 layout_mode = 1
-offset_right = 250.0
-offset_bottom = 50.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Play Now"
 label_settings = SubResource("LabelSettings_2i2ne")
 
 [node name="LeaderboardButton" type="Button" parent="MenuButtons"]
 layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
+anchors_preset = -1
+anchor_top = 0.667
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -40.0
-offset_right = 200.0
+offset_top = -0.0400085
 grow_vertical = 0
 mouse_default_cursor_shape = 2
 
 [node name="Label" type="Label" parent="MenuButtons/LeaderboardButton"]
 layout_mode = 1
-offset_right = 250.0
-offset_bottom = 50.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
 text = "Leaderboard"
 label_settings = SubResource("LabelSettings_nawju")

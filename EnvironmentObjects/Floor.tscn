@@ -20,7 +20,6 @@ heightmap_min_layers = 8
 heightmap_max_layers = 32
 heightmap_texture = ExtResource("1_ahbm6")
 uv1_scale = Vector3(20, 20, 20)
-uv1_triplanar = true
 
 [node name="StaticBody3D" type="StaticBody3D"]
 collision_mask = 12

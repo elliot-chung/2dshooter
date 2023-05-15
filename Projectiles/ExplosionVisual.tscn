@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3 uid="uid://bfo4mkctafauk"]
+
+[ext_resource type="Script" path="res://Projectiles/explosion_visual.gd" id="1_y3yp6"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7egxj"]
+transparency = 1
+albedo_color = Color(1, 0.305882, 0, 0.156863)
+emission_enabled = true
+emission = Color(1, 1, 0, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_otjvx"]
+material = SubResource("StandardMaterial3D_7egxj")
+radius = 0.05
+height = 0.1
+
+[sub_resource type="Curve" id="Curve_burxo"]
+max_value = 40.0
+_data = [Vector2(0, 0.454548), 0.0, 100.493, 0, 0, Vector2(0.132075, 18.9091), 99.1169, 99.1169, 0, 0, Vector2(0.367925, 33.8182), 20.6494, 20.6494, 0, 0, Vector2(1, 40), 2.56969, 0.0, 0, 0]
+point_count = 4
+
+[node name="Explosion Visual" type="CPUParticles3D"]
+emitting = false
+amount = 3
+lifetime = 0.15
+one_shot = true
+explosiveness = 1.0
+mesh = SubResource("SphereMesh_otjvx")
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.0
+emission_ring_radius = 0.2
+emission_ring_inner_radius = 0.2
+gravity = Vector3(0, 0, 0)
+scale_amount_curve = SubResource("Curve_burxo")
+script = ExtResource("1_y3yp6")

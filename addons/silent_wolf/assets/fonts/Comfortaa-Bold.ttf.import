@@ -2,7 +2,7 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://td48blo8t17r"
+uid="uid://d4kabkagmfeq"
 path="res://.godot/imported/Comfortaa-Bold.ttf-4fa420dde6e624fdca7fe038f7939233.fontdata"
 
 [deps]
@@ -18,7 +18,6 @@ generate_mipmaps=false
 multichannel_signed_distance_field=false
 msdf_pixel_range=8
 msdf_size=48
-allow_system_fallback=true
 force_autohinter=false
 hinting=1
 subpixel_positioning=1

@@ -17,12 +17,14 @@ func _ready():
 	else:
 		# use a signal to notify when the high scores have been returned, and show a "loading" animation until it's the case...
 		add_loading_scores_message()
-		await SilentWolf.Scores.get_high_scores(0).sw_scores_received
+		var sw_result = await SilentWolf.Scores.get_high_scores().sw_get_scores_complete
+		scores = sw_result["scores"]
 		hide_message()
-		render_board(SilentWolf.Scores.scores)
+		render_board(scores)
 
-func render_board(scores):
-	if !scores:
+
+func render_board(scores: Array) -> void:
+	if scores.is_empty():
 		add_no_scores_message()
 	else:
 		if len(scores) > 1 and scores[0].score > scores[-1].score:
@@ -42,14 +44,13 @@ func render_board(scores):
 #	return displayable_time
 			
 
-func reverse_order(scores):
-	var reverted_scores = scores
+func reverse_order(scores: Array) -> Array:
 	if len(scores) > 1 and scores[0].score > scores[-1].score:
-		reverted_scores = scores.reverse()
-	return reverted_scores
+		scores.reverse()
+	return scores
 
-	
-func sort_by_score(a, b):
+
+func sort_by_score(a: Dictionary, b: Dictionary) -> bool:
 	if a.score > b.score:
 		return true;
 	else:
@@ -58,11 +59,12 @@ func sort_by_score(a, b):
 		else:
 			return true;
 
-func add_item(player_name, score):
-	var item = ScoreItem.instantiate()
+
+func add_item(player_name: String, score_value: String) -> void:
+	var item = ScoreItem.instance()
 	list_index += 1
 	item.get_node("PlayerName").text = str(list_index) + str(". ") + player_name
-	item.get_node("Score").text = score
+	item.get_node("Score").text = score_value
 	item.offset_top = list_index * 100
 	$"Board/HighScores/ScoreItemContainer".add_child(item)
 
@@ -71,17 +73,20 @@ func add_no_scores_message():
 	item.text = "No scores yet!"
 	$"Board/MessageContainer".show()
 	item.offset_top = 135
-	
-func add_loading_scores_message():
+
+
+func add_loading_scores_message() -> void:
 	var item = $"Board/MessageContainer/TextMessage"
 	item.text = "Loading scores..."
 	$"Board/MessageContainer".show()
 	item.offset_top = 135
-	
-func hide_message():
+
+
+func hide_message() -> void:
 	$"Board/MessageContainer".hide()
 
-func _on_CloseButton_pressed():
+
+func _on_CloseButton_pressed() -> void:
 	var scene_name = SilentWolf.scores_config.open_scene_on_close
 	print("scene_name: " + str(scene_name))
 	get_tree().change_scene_to_file(scene_name)

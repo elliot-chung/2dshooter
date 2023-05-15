@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://cr7exjsodi3yb"
+path="res://.godot/imported/player_shoot.ogg-aa251b27ede04a68133bfda2cc752965.oggvorbisstr"
+
+[deps]
+
+source_file="res://sound effects/player_shoot.ogg"
+dest_files=["res://.godot/imported/player_shoot.ogg-aa251b27ede04a68133bfda2cc752965.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
