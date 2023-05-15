@@ -22,7 +22,7 @@ const SWLogger = preload("res://addons/silent_wolf/utils/SWLogger.gd")
 # See https://silentwolf.com for more details
 #
 var config = {
-	"api_key": "",
+	"api_key": "D2xuN0MRem8zZVwasckWeV7bdhCwOLM3JENTokS1", # Please dont
 	"game_id": "roguedemo",
 	"log_level": 0
 }

@@ -77,7 +77,7 @@ var item_dictionary = {
 			"img_path": "res://Powerups/defense.png"
 		},
 		"vampiric": {
-			"count": 2,
+			"count": 0,
 			"description": "Firing costs health but heal from damage",
 			"img_path": "res://Powerups/health.png"
 		},
@@ -102,7 +102,7 @@ var item_dictionary = {
 			"img_path": "res://Powerups/offense.png"
 		},
 		"rhythmic": {
-			"count": 5,
+			"count": 0,
 			"description": "Increase base rate of fire",
 			"img_path": "res://Powerups/offense.png"
 		},
