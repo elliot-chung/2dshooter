@@ -38,11 +38,6 @@ shape = SubResource("SphereShape3D_yajio")
 mesh = SubResource("SphereMesh_opb5r")
 surface_material_override/0 = SubResource("StandardMaterial3D_w06es")
 
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
-light_energy = 4.0
-light_specular = 2.0
-shadow_enabled = true
-
 [node name="BounceArea" type="Area3D" parent="."]
 collision_layer = 0
 collision_mask = 8
