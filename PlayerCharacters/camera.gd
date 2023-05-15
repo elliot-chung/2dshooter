@@ -14,7 +14,7 @@ var trauma := 0.0
 var trauma_power := 2
 
 func shake(amount: float):
-	trauma = min(trauma + amount, 1.0)
+	trauma = min(trauma + amount, 0.25)
 
 func _shake(delta):
 	if !trauma:

@@ -135,7 +135,7 @@ func _on_GetScores_request_completed(result, response_code, headers, body) -> vo
 	if status_check:
 		var json_body = JSON.parse_string(body.get_string_from_utf8())
 		var sw_result: Dictionary = SilentWolf.build_result(json_body)
-		if json_body.success:
+		if "success" in json_body && json_body.success:
 			SWLogger.info("SilentWolf get scores success, found " + str(json_body.top_scores.size()) + " scores.")
 			scores = translate_score_fields_in_array(json_body.top_scores)
 			SWLogger.debug("Scores: " + str(scores))
@@ -150,7 +150,7 @@ func _on_GetScores_request_completed(result, response_code, headers, body) -> vo
 			sw_result["scores"] = scores
 			sw_result["ld_name"] = ld_name
 		else:
-			SWLogger.error("SilentWolf get scores failure: " + str(json_body.error))
+			SWLogger.error("SilentWolf get scores failure: " + str(json_body.message))
 		sw_get_scores_complete.emit(sw_result)
 
 
