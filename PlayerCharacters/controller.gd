@@ -142,7 +142,7 @@ func take_damage(damage: float, knockback: Vector3, melee: bool):
 		player.stream = HIT_AUDIO
 		self.add_child(player)
 	
-		PlayerCamera.shake(3.5 * damage / max_health)
+		PlayerCamera.shake(0.25)
 	
 	if melee && melee_payback_damage > 0 && _payback_timer == 0.0: 
 		explode()
@@ -290,7 +290,7 @@ func _calculate_cursor_location():
 	# Move Cursor _to Collision Point
 
 func _health_regen(delta):
-	var real_regen = comeback_regen if _regen_timer > 0.0 else health_regen
+	var real_regen = comeback_regen + health_regen if _regen_timer > 0.0 else health_regen
 	heal_damage(real_regen * delta)
 	
 func _ready():

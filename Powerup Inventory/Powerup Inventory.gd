@@ -166,23 +166,23 @@ func _calculate_multiplier(stat_name: String, n: int) -> float:
 		"deadly_damage_scaling":
 			return _calculate_stacks_linear(n, 0.5, 0.2, 5, 10)
 		"precise_critical_chance":
-			return _calculate_stacks_capped(n, 0.1, 10)
+			return _calculate_stacks_capped(n, 0.25, 4)
 		"zippy_damage_scaling":
-			return _calculate_stacks_uncapped(n, 0.1)
+			return _calculate_stacks_uncapped(n, 0.2)
 		"zippy_projectile_speed_scaling":
-			return _calculate_stacks_linear(n, 0.20, 0.05, 10, 15)
+			return _calculate_stacks_linear(n, 0.5, 0.25, 5, 10)
 		"slowpoke_projectile_speed_scaling":
 			return _calculate_stacks_capped(n, -0.2, 4)
 		"slowpoke_damage_scaling":
-			return _calculate_stacks_linear(n, 0.45, 0.25, 10, 15)
+			return _calculate_stacks_linear(n, 1.0, 0.5, 5, 10)
 		"bigger_damage_scaling":
-			return _calculate_stacks_linear(n, 0.15, 0.1, 10, 15)
+			return _calculate_stacks_linear(n, 0.35, 0.2, 5, 10)
 		"bigger_projectile_size":
-			return _calculate_stacks_capped(n, 0.2, 45)
+			return _calculate_stacks_capped(n, 1.0, 10)
 		"faster_movement_speed_scaling":
-			return _calculate_stacks_linear(n, 0.25, 0.1, 10, 15)
+			return _calculate_stacks_linear(n, 0.5, 0.25, 5, 10)
 		"trigger_happy_firerate_scaling":
-			return _calculate_stacks_linear(n, 0.25, 0.1, 10, 15)
+			return _calculate_stacks_linear(n, 0.5, 0.25, 5, 10)
 		"impatient_dash_cooldown_scaling":
 			return _calculate_stacks_log(n, -0.1, 7)
 		"frugal_max_dash_count":
@@ -196,7 +196,7 @@ func _calculate_multiplier(stat_name: String, n: int) -> float:
 		"masochistic_comeback_regen":
 			return _calculate_stacks_linear(n, 10.0, 5.0, 10, 15)
 		"volatile_melee_payback_damage":
-			return _calculate_stacks_linear(n, 9.0, 5.0, 10, 15)
+			return _calculate_stacks_linear(n, 10.0, 5.0, 10, 15)
 		"vampiric_firing_cost":
 			return _calculate_stacks_capped(n, 1.0, 10)
 		"vampiric_lifesteal":
@@ -208,7 +208,7 @@ func _calculate_multiplier(stat_name: String, n: int) -> float:
 		"explosive_explosion_conversion":
 			return _calculate_stacks_capped(n, 0.1, 10)
 		"explosive_damage_scaling":
-			return _calculate_stacks_uncapped(n, 0.15)
+			return _calculate_stacks_uncapped(n, 0.25)
 		_:
 			assert(false, "Unknown Name: " + stat_name)
 			return 0.0

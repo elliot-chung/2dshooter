@@ -34,7 +34,7 @@ var _max_health = starting_max_health
 
 func true_hit(damage:float, knockback:Vector3, real_bullet:bool=true):
 	health -= damage
-	velocity = knockback
+	velocity += knockback
 	
 	var player = AUDIO_PLAYER.instantiate()
 	player.stream = HIT_AUDIO

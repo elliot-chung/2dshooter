@@ -27,8 +27,9 @@ layout_mode = 1
 anchors_preset = -1
 offset_right = 170.0
 offset_bottom = 40.0
-text = "asdasd"
+text = "asdasdwerwerwerwer"
 label_settings = SubResource("LabelSettings_c0chl")
+clip_text = true
 
 [node name="Score" type="Label" parent="."]
 layout_mode = 1
