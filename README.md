@@ -1,4 +1,4 @@
-# Top Down 2D Shoot Video Game Demo
+# [Top Down 2D Shoot Video Game Demo](https://2dshooterdemo.netlify.app/)
 The following video game was built in the Godot Engine, compiled to Web Assembly, and finally depoloyed on the cloud using Netlify's services. 
 
 The leaderboard backend is handled by the [SilentWolf API.](https://silentwolf.com/)
