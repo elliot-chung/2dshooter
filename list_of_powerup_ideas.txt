@@ -1,7 +1,7 @@
 All numbers are place-holders until balancing can happen
 
 Common Tier
--------------
+------------
 name: Healthy
 Effect: 
 	Increase health_scaling +25% up to 250%
